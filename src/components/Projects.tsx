@@ -1,8 +1,8 @@
 "use client";
 
-import { useRef } from "react";
-import { motion, useInView } from "framer-motion";
-import { ExternalLink } from "lucide-react";
+import { useRef, useState, useEffect } from "react";
+import { motion, AnimatePresence, useInView } from "framer-motion";
+import { ExternalLink, X, LayoutTemplate, Briefcase, Code, Terminal, Boxes, Sparkles } from "lucide-react";
 import { projects } from "@/lib/data";
 
 const GithubIcon = ({ size = 16 }: { size?: number }) => (
@@ -11,189 +11,274 @@ const GithubIcon = ({ size = 16 }: { size?: number }) => (
   </svg>
 );
 
+// Map categories to distinct icons for the stylized previews
+const categoryIcons: Record<string, React.ElementType> = {
+  "Full Stack": BlocksIcon,
+  "Finance": Briefcase,
+  "EdTech": LayoutTemplate,
+  "Events": Boxes,
+};
+
+function BlocksIcon({ size }: { size: number }) {
+  return <Code size={size} />;
+}
+
 const containerVariants = {
   hidden: {},
-  visible: { transition: { staggerChildren: 0.12 } },
+  visible: { transition: { staggerChildren: 0.15 } },
 };
 
 const cardVariants = {
-  hidden: { opacity: 0, y: 50 },
+  hidden: { opacity: 0, y: 40 },
   visible: {
     opacity: 1,
     y: 0,
-    transition: { duration: 0.65, ease: "easeOut" as const },
+    transition: { duration: 0.6, ease: "easeOut" as const },
   },
 };
 
 export default function Projects() {
   const ref = useRef<HTMLElement>(null);
-  const inView = useInView(ref, { once: true, margin: "-60px" });
+  const inView = useInView(ref, { once: true, margin: "-100px" });
+  const [selectedProject, setSelectedProject] = useState<(typeof projects)[0] | null>(null);
+
+  // Prevent background scroll when modal is open
+  useEffect(() => {
+    if (selectedProject) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "auto";
+    }
+    return () => {
+      document.body.style.overflow = "auto";
+    };
+  }, [selectedProject]);
 
   return (
-    <section id="projects" ref={ref} className="section-padding relative overflow-hidden">
-      {/* Background accent */}
-      <div
-        className="absolute right-0 top-1/3 w-80 h-80 opacity-10 blur-3xl pointer-events-none"
-        style={{ background: "radial-gradient(circle, #6366F1 0%, transparent 70%)" }}
-      />
-
+    <section id="projects" ref={ref} className="section-padding relative overflow-hidden bg-slate-900/20">
       <div className="max-w-6xl mx-auto px-6">
-        {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           animate={inView ? { opacity: 1, y: 0 } : {}}
           transition={{ duration: 0.6 }}
-          className="mb-16"
+          className="mb-20 text-center flex flex-col items-center"
         >
-          <div className="flex items-center gap-3 mb-4">
-            <div className="h-px flex-1 max-w-12 bg-indigo-500/30" />
-            <span className="text-indigo-400 text-sm font-semibold uppercase tracking-widest">
-              Featured Work
+          <div className="inline-flex items-center gap-3 mb-6">
+            <div className="h-px w-8 bg-indigo-500/50" />
+            <span className="text-indigo-400 text-sm font-bold uppercase tracking-widest">
+              Selected Work
             </span>
+            <div className="h-px w-8 bg-indigo-500/50" />
           </div>
-          <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
-            <h2
-              className="text-4xl sm:text-5xl font-extrabold text-white leading-tight"
-              style={{ fontFamily: "'Space Grotesk', sans-serif" }}
-            >
-              Projects I&apos;ve built.
-            </h2>
-            <p className="text-slate-500 text-sm max-w-xs">
-              Real products, shipped to production.
-            </p>
-          </div>
+          <h2 className="text-4xl md:text-5xl font-black text-white leading-tight font-display mb-4">
+            Projects I&apos;ve built.
+          </h2>
+          <p className="text-slate-400 text-base max-w-lg">
+            Real systems addressing significant problems, fully deployed to production.
+          </p>
         </motion.div>
 
-        {/* Grid */}
         <motion.div
           variants={containerVariants}
           initial="hidden"
           animate={inView ? "visible" : "hidden"}
-          className="grid md:grid-cols-2 gap-6"
+          className="grid md:grid-cols-2 gap-8"
         >
-          {projects.map((project) => (
-            <ProjectCard key={project.id} project={project} />
+          {projects.map((project, idx) => (
+            <ProjectCard 
+              key={project.id} 
+              project={project} 
+              isFeatured={project.featured}
+              onClick={() => setSelectedProject(project)}
+            />
           ))}
         </motion.div>
       </div>
+
+      {/* modal overlay */}
+      <AnimatePresence>
+        {selectedProject && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={() => setSelectedProject(null)}
+            className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 bg-slate-950/80 backdrop-blur-sm"
+          >
+            <motion.div
+              initial={{ y: 50, opacity: 0, scale: 0.95 }}
+              animate={{ y: 0, opacity: 1, scale: 1 }}
+              exit={{ y: 20, opacity: 0, scale: 0.95 }}
+              transition={{ type: "spring", damping: 25, stiffness: 300 }}
+              onClick={(e) => e.stopPropagation()}
+              className="relative w-full max-w-4xl max-h-[90vh] overflow-y-auto glass-panel rounded-2xl shadow-2xl border border-slate-700/50 flex flex-col"
+            >
+              {/* modal header/cover */}
+              <div 
+                className={`w-full h-32 md:h-48 bg-gradient-to-br ${selectedProject.gradient} relative flex items-center justify-center`}
+              >
+                <button
+                  onClick={() => setSelectedProject(null)}
+                  className="absolute top-4 right-4 p-2 rounded-full bg-slate-900/40 text-white hover:bg-slate-900/60 transition-colors backdrop-blur-md"
+                >
+                  <X size={20} />
+                </button>
+                <div className="absolute inset-0 bg-black/20" />
+                <h3 className="relative z-10 text-3xl md:text-5xl font-black text-white font-display text-center drop-shadow-md">
+                  {selectedProject.name}
+                </h3>
+              </div>
+
+              {/* modal content */}
+              <div className="p-6 md:p-10 text-slate-300">
+                <div className="flex flex-col md:flex-row gap-10">
+                  <div className="flex-1 space-y-8">
+                    <div>
+                      <h4 className="text-xl font-bold text-white mb-3 flex items-center gap-2">
+                        <Terminal size={18} className="text-indigo-400" /> 
+                        The Problem
+                      </h4>
+                      <p className="leading-relaxed text-slate-400">{selectedProject.modalDetails?.problem}</p>
+                    </div>
+                    <div>
+                      <h4 className="text-xl font-bold text-white mb-3 flex items-center gap-2">
+                        <Sparkles size={18} className="text-green-400" />
+                        The Solution
+                      </h4>
+                      <p className="leading-relaxed text-slate-400">{selectedProject.modalDetails?.solution}</p>
+                    </div>
+                    <div>
+                      <h4 className="text-xl font-bold text-white mb-3">Key Features</h4>
+                      <ul className="space-y-2">
+                        {selectedProject.modalDetails?.features.map((feat, i) => (
+                          <li key={i} className="flex items-start gap-2">
+                            <span className="text-indigo-400 mt-1">▹</span>
+                            <span className="text-slate-400">{feat}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                    <div className="p-4 rounded-xl bg-indigo-500/10 border border-indigo-500/20">
+                      <h4 className="text-sm font-bold text-indigo-300 uppercase tracking-widest mb-2">Impact</h4>
+                      <p className="text-indigo-100/80 leading-relaxed font-medium">
+                        {selectedProject.modalDetails?.impact}
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="md:w-64 space-y-6">
+                    <div>
+                      <h4 className="text-sm font-bold text-slate-400 uppercase tracking-widest mb-3">Tech Stack</h4>
+                      <div className="flex flex-wrap gap-2">
+                        {selectedProject.tech.map((tech) => (
+                          <span key={tech} className="text-xs font-semibold px-3 py-1.5 rounded-lg bg-slate-800/80 border border-slate-700 text-slate-300">
+                            {tech}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                    <div>
+                      <h4 className="text-sm font-bold text-slate-400 uppercase tracking-widest mb-3">Links</h4>
+                      <div className="flex flex-col gap-3">
+                        <a 
+                          href={selectedProject.github} 
+                          target="_blank" 
+                          rel="noopener noreferrer"
+                          className="flex items-center justify-center gap-2 w-full py-3 rounded-xl bg-white/5 border border-slate-700 hover:bg-white/10 hover:border-indigo-500/40 transition-all font-semibold text-sm"
+                        >
+                          <GithubIcon size={16} /> View Source
+                        </a>
+                        <a 
+                          href={selectedProject.live} 
+                          target="_blank" 
+                          rel="noopener noreferrer" 
+                          className="flex items-center justify-center gap-2 w-full py-3 rounded-xl bg-indigo-600 hover:bg-indigo-500 transition-all font-semibold text-white shadow-lg shadow-indigo-600/20 text-sm"
+                        >
+                          View Live Demo <ExternalLink size={16} />
+                        </a>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </section>
   );
 }
 
-function ProjectCard({ project }: { project: (typeof projects)[0] }) {
+function ProjectCard({ project, isFeatured, onClick }: { project: (typeof projects)[0], isFeatured: boolean, onClick: () => void }) {
+  const Icon = categoryIcons[project.category] || BlocksIcon;
+
   return (
     <motion.article
       variants={cardVariants}
-      whileHover={{ y: -6, transition: { duration: 0.3 } }}
-      id={`project-${project.id}`}
-      className="group relative glass-card overflow-hidden flex flex-col transition-all duration-300 hover:border-indigo-500/30 hover:shadow-2xl hover:shadow-indigo-500/10"
+      onClick={onClick}
+      className={`group cursor-pointer relative glass-card overflow-hidden flex flex-col transition-all duration-300 hover:-translate-y-2 hover:shadow-2xl hover:shadow-indigo-500/10 ${isFeatured ? "md:col-span-2 md:flex-row" : ""}`}
     >
-      {/* Top gradient strip */}
-      <div
-        className={`h-1 w-full bg-gradient-to-r ${project.gradient
-          .replace("/20", "")
-          .replace("from-", "from-opacity-100 from-")}`}
-        style={{
-          background: `linear-gradient(90deg, ${project.accentColor}99, ${project.accentColor}33)`,
-        }}
-      />
+      {/* Visual Preview Section */}
+      <div className={`relative bg-gradient-to-br ${project.gradient} border-b border-white/5 overflow-hidden flex items-center justify-center ${isFeatured ? "md:w-2/5 md:border-b-0 md:border-r" : "h-48"}`}>
+        <div className="absolute inset-0 bg-black/10 transition-opacity group-hover:opacity-0" />
+        <motion.div 
+          className="p-6 rounded-2xl bg-white/10 backdrop-blur-md shadow-2xl transition-transform duration-500 group-hover:scale-110"
+        >
+          <Icon size={48} className="text-white drop-shadow-lg" />
+        </motion.div>
+      </div>
 
-      {/* Card gradient overlay */}
-      <div
-        className={`absolute inset-0 bg-gradient-to-br ${project.gradient} opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none`}
-      />
-
-      <div className="relative p-6 flex flex-col h-full gap-5">
-        {/* Header row */}
+      <div className={`relative p-8 flex flex-col flex-1 gap-5 ${isFeatured ? "md:w-3/5" : ""}`}>
         <div className="flex items-start justify-between gap-4">
           <div>
-            <div className="flex items-center gap-2 mb-2">
+            <div className="flex items-center gap-3 mb-3">
               <span
-                className="text-xs font-semibold px-2.5 py-1 rounded-full border"
+                className="text-[11px] font-bold uppercase tracking-widest px-3 py-1.5 rounded-full border"
                 style={{
                   color: project.accentColor,
-                  borderColor: `${project.accentColor}40`,
-                  backgroundColor: `${project.accentColor}12`,
+                  borderColor: `${project.accentColor}30`,
+                  backgroundColor: `${project.accentColor}10`,
                 }}
               >
                 {project.category}
               </span>
+              {isFeatured && (
+                <span className="text-[11px] font-bold uppercase tracking-widest px-3 py-1.5 rounded-full border border-amber-500/30 bg-amber-500/10 text-amber-400 flex items-center gap-1.5">
+                  <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse" />
+                  Featured
+                </span>
+              )}
             </div>
-            <h3
-              className="text-xl font-bold text-white group-hover:text-indigo-200 transition-colors"
-              style={{ fontFamily: "'Space Grotesk', sans-serif" }}
-            >
+            <h3 className="text-2xl font-black text-white group-hover:text-indigo-300 transition-colors font-display">
               {project.name}
             </h3>
           </div>
-
-          {/* Action buttons */}
-          <div className="flex items-center gap-2 flex-shrink-0">
-            <motion.a
-              href={project.github}
-              target="_blank"
-              rel="noopener noreferrer"
-              aria-label={`${project.name} GitHub`}
-              id={`project-${project.id}-github`}
-              whileHover={{ scale: 1.1, color: "#6366F1" }}
-              whileTap={{ scale: 0.9 }}
-              className="p-2 rounded-lg border border-slate-700/60 bg-white/5 text-slate-400 hover:text-indigo-400 hover:border-indigo-500/30 transition-all duration-200"
-            >
-              <GithubIcon size={16} />
-            </motion.a>
-            <motion.a
-              href={project.live}
-              target="_blank"
-              rel="noopener noreferrer"
-              aria-label={`${project.name} Live Demo`}
-              id={`project-${project.id}-demo`}
-              whileHover={{ scale: 1.1, color: "#22C55E" }}
-              whileTap={{ scale: 0.9 }}
-              className="p-2 rounded-lg border border-slate-700/60 bg-white/5 text-slate-400 hover:text-green-400 hover:border-green-500/30 transition-all duration-200"
-            >
-              <ExternalLink size={16} />
-            </motion.a>
-          </div>
         </div>
 
-        {/* Description */}
-        <p className="text-slate-400 text-sm leading-relaxed flex-1">
+        <p className="text-slate-400 text-sm md:text-base leading-relaxed flex-1">
           {project.description}
         </p>
 
-        {/* Tech stack */}
         <div className="flex flex-wrap gap-2">
-          {project.tech.map((tech) => (
+          {project.tech.slice(0, isFeatured ? 5 : 3).map((tech) => (
             <span
               key={tech}
-              className="text-xs font-medium px-3 py-1.5 rounded-lg bg-slate-800/80 text-slate-300 border border-slate-700/50 transition-colors group-hover:border-slate-600/50"
+              className="text-xs font-semibold px-2.5 py-1 rounded bg-black/40 border border-white/5 text-slate-300"
             >
               {tech}
             </span>
           ))}
+          {project.tech.length > (isFeatured ? 5 : 3) && (
+            <span className="text-xs font-semibold px-2.5 py-1 rounded bg-transparent border border-dashed border-slate-600 text-slate-500">
+              +{project.tech.length - (isFeatured ? 5 : 3)} more
+            </span>
+          )}
         </div>
 
-        {/* Bottom CTA row */}
-        <div className="flex items-center justify-between pt-2 border-t border-slate-700/40">
-          <a
-            href={project.github}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex items-center gap-1.5 text-xs text-slate-500 hover:text-indigo-400 transition-colors font-medium"
-          >
-            <GithubIcon size={12} />
-            View Source
-          </a>
-          <a
-            href={project.live}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex items-center gap-1.5 text-xs font-semibold transition-colors"
-            style={{ color: project.accentColor }}
-          >
-            Live Demo
-            <ExternalLink size={12} />
-          </a>
+        <div className="pt-5 border-t border-slate-800/80 mt-auto">
+          <span className="text-indigo-400 text-sm font-semibold flex items-center gap-2 group-hover:translate-x-1 transition-transform">
+            Read Case Study <ExternalLink size={14} />
+          </span>
         </div>
       </div>
     </motion.article>

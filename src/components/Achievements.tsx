@@ -6,155 +6,87 @@ import { achievements } from "@/lib/data";
 
 export default function Achievements() {
   const ref = useRef<HTMLElement>(null);
-  const inView = useInView(ref, { once: true, margin: "-80px" });
+  const inView = useInView(ref, { once: true, margin: "-100px" });
 
   return (
-    <section
-      id="achievements"
-      ref={ref}
-      className="section-padding relative overflow-hidden"
-    >
+    <section id="achievements" ref={ref} className="section-padding relative overflow-hidden">
       {/* Background glow */}
-      <div
-        className="absolute left-1/2 -translate-x-1/2 top-0 w-full h-px opacity-30"
-        style={{
-          background:
-            "linear-gradient(90deg, transparent, #6366F1, transparent)",
-        }}
-      />
-      <div
-        className="absolute left-1/2 -translate-x-1/2 top-1/2 -translate-y-1/2 w-96 h-96 opacity-10 blur-3xl pointer-events-none"
-        style={{
-          background: "radial-gradient(circle, #F59E0B 0%, transparent 70%)",
-        }}
-      />
+      <div className="absolute left-1/2 -translate-x-1/2 top-0 w-full h-px opacity-30 bg-gradient-to-r from-transparent via-amber-500 to-transparent" />
 
-      <div className="max-w-6xl mx-auto px-6">
-        {/* Header */}
+      <div className="max-w-4xl mx-auto px-6 relative z-10">
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           animate={inView ? { opacity: 1, y: 0 } : {}}
           transition={{ duration: 0.6 }}
-          className="mb-16 text-center"
+          className="mb-20 text-center"
         >
-          <div className="flex items-center justify-center gap-3 mb-4">
-            <div className="h-px w-12 bg-amber-500/30" />
-            <span className="text-amber-400 text-sm font-semibold uppercase tracking-widest">
-              Recognition
-            </span>
-            <div className="h-px w-12 bg-amber-500/30" />
-          </div>
-          <h2
-            className="text-4xl sm:text-5xl font-extrabold text-white leading-tight"
-            style={{ fontFamily: "'Space Grotesk', sans-serif" }}
-          >
+          <span className="text-amber-500 text-sm font-bold uppercase tracking-widest mb-4 inline-block">
+            Recognition & Impact
+          </span>
+          <h2 className="text-4xl md:text-5xl font-black text-white leading-tight font-display mb-4">
             Wins that matter.
           </h2>
-          <p className="text-slate-500 mt-3 max-w-md mx-auto text-sm">
+          <p className="text-slate-400 max-w-md mx-auto text-base">
             Results from competing and building under pressure.
           </p>
         </motion.div>
 
-        {/* Cards */}
-        <div className="grid md:grid-cols-2 gap-6 max-w-4xl mx-auto">
-          {achievements.map((achievement, i) => (
+        {/* Timeline Layout */}
+        <div className="relative border-l border-slate-700/50 pl-8 md:pl-12 ml-4 md:ml-0 space-y-12">
+          {achievements.map((item, i) => (
             <motion.div
-              key={achievement.id}
-              initial={{ opacity: 0, scale: 0.92, y: 30 }}
-              animate={inView ? { opacity: 1, scale: 1, y: 0 } : {}}
-              transition={{
-                duration: 0.65,
-                delay: i * 0.15,
-                ease: [0.22, 1, 0.36, 1],
-              }}
-              whileHover={{ y: -8, transition: { duration: 0.3 } }}
-              id={`achievement-${achievement.id}`}
-              className={`glass-card relative overflow-hidden p-8 hover:border-amber-500/20 transition-all duration-300 hover:shadow-2xl`}
-              style={{
-                boxShadow: `0 0 0 0 ${achievement.color}00`,
-              }}
+              key={item.id}
+              initial={{ opacity: 0, x: -30 }}
+              animate={inView ? { opacity: 1, x: 0 } : {}}
+              transition={{ duration: 0.6, delay: i * 0.2 }}
+              className={`relative p-8 rounded-2xl glass-panel group transition-all duration-300 ${item.highlight ? "border-amber-500/30" : "border-slate-700/50"}`}
             >
-              {/* Gradient background */}
-              <div
-                className={`absolute inset-0 bg-gradient-to-br ${achievement.gradient} opacity-60 pointer-events-none`}
-              />
+              {/* Timeline marker / Icon */}
+              <div 
+                className={`absolute -left-[54px] md:-left-[76px] top-6 w-12 h-12 rounded-full border-4 border-slate-900 flex items-center justify-center text-xl shadow-xl z-20 transition-transform group-hover:scale-110 ${item.highlight ? "bg-amber-500/20 text-amber-400 border-amber-500/50 ring-4 ring-amber-500/10 animate-pulse" : "bg-slate-800 text-slate-300 border-slate-600"}`}
+                style={{ backgroundColor: `${item.color}20`, borderColor: `${item.color}50` }}
+              >
+                {item.icon}
+              </div>
 
-              {/* Glow orb */}
-              <div
-                className="absolute -top-8 -right-8 w-32 h-32 rounded-full blur-2xl opacity-20 pointer-events-none"
-                style={{
-                  background: `radial-gradient(circle, ${achievement.color} 0%, transparent 70%)`,
-                }}
-              />
+              {/* Background Glow if highlighted */}
+              {item.highlight && (
+                <div className="absolute inset-0 bg-gradient-to-r from-amber-500/5 to-transparent rounded-2xl pointer-events-none" />
+              )}
 
-              <div className="relative">
-                {/* Icon + Year */}
-                <div className="flex items-start justify-between mb-5">
-                  <div
-                    className="w-16 h-16 rounded-2xl flex items-center justify-center text-3xl border"
-                    style={{
-                      backgroundColor: `${achievement.color}15`,
-                      borderColor: `${achievement.color}30`,
-                    }}
-                  >
-                    {achievement.icon}
-                  </div>
-                  <span
-                    className="text-xs font-bold px-3 py-1.5 rounded-full border"
-                    style={{
-                      color: achievement.color,
-                      borderColor: `${achievement.color}40`,
-                      backgroundColor: `${achievement.color}12`,
-                    }}
-                  >
-                    {achievement.year}
-                  </span>
-                </div>
-
-                {/* Title */}
-                <h3
-                  className="text-xl font-bold text-white mb-1"
-                  style={{ fontFamily: "'Space Grotesk', sans-serif" }}
+              <div className="relative z-10">
+                <span 
+                  className="inline-block px-3 py-1 text-[10px] font-bold uppercase tracking-widest rounded-full mb-4 border"
+                  style={{ color: item.color, borderColor: `${item.color}40`, backgroundColor: `${item.color}10` }}
                 >
-                  {achievement.title}
-                </h3>
-                <p
-                  className="text-sm font-semibold mb-3"
-                  style={{ color: achievement.color }}
-                >
-                  {achievement.subtitle}
-                </p>
-                <p className="text-slate-400 text-sm leading-relaxed">
-                  {achievement.description}
-                </p>
+                  {item.year}
+                </span>
+                
+                <h3 className="text-2xl font-black text-white font-display mb-1">{item.title}</h3>
+                <h4 className="text-sm font-bold uppercase tracking-wide mb-4" style={{ color: item.color }}>{item.subtitle}</h4>
+                <p className="text-slate-400 leading-relaxed text-sm md:text-base">{item.description}</p>
               </div>
             </motion.div>
           ))}
         </div>
 
-        {/* Bottom stats strip */}
+        {/* Stats */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={inView ? { opacity: 1, y: 0 } : {}}
-          transition={{ duration: 0.6, delay: 0.5 }}
-          className="mt-14 flex flex-wrap items-center justify-center gap-8 text-center"
+          transition={{ duration: 0.6, delay: 0.6 }}
+          className="mt-20 pt-10 border-t border-slate-800 flex flex-wrap items-center justify-center gap-10 md:gap-16"
         >
           {[
-            { value: "2+", label: "Hackathons Won" },
-            { value: "24h", label: "Longest Sprint" },
-            { value: "4+", label: "Real Projects" },
-            { value: "1st", label: "Both Times" },
-          ].map(({ value, label }) => (
-            <div key={label} className="flex flex-col gap-1">
-              <span
-                className="text-3xl font-extrabold gradient-text"
-                style={{ fontFamily: "'Space Grotesk', sans-serif" }}
-              >
-                {value}
-              </span>
-              <span className="text-slate-500 text-xs font-medium uppercase tracking-wider">
-                {label}
-              </span>
+            { v: "2+", l: "Hackathons" },
+            { v: "24h", l: "Sprinter" },
+            { v: "1st", l: "Placement" }
+          ].map((stat) => (
+            <div key={stat.l} className="text-center group">
+              <div className="text-4xl font-black text-transparent bg-clip-text bg-gradient-to-r from-white to-slate-500 mb-1 font-display group-hover:from-amber-400 group-hover:to-amber-600 transition-all">
+                {stat.v}
+              </div>
+              <div className="text-xs font-bold text-slate-500 uppercase tracking-widest">{stat.l}</div>
             </div>
           ))}
         </motion.div>

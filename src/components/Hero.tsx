@@ -73,38 +73,45 @@ export default function Hero() {
       <div className="absolute inset-0 grid-pattern opacity-60" />
 
       {/* Central radial glow */}
-      <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+      <motion.div
+        animate={{ opacity: [0.1, 0.15, 0.1], scale: [1, 1.05, 1] }}
+        transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
+        className="absolute inset-0 flex items-center justify-center pointer-events-none"
+      >
         <div
-          className="w-[700px] h-[700px] rounded-full opacity-10 blur-3xl"
+          className="w-[700px] h-[700px] rounded-full opacity-10 blur-[100px]"
           style={{ background: "radial-gradient(circle, #6366F1 0%, #7C3AED 40%, transparent 70%)" }}
         />
-      </div>
+      </motion.div>
 
       {/* Top-right accent */}
-      <div
-        className="absolute top-0 right-0 w-96 h-96 opacity-20 blur-3xl pointer-events-none"
+      <motion.div
+        animate={{ x: [0, 30, 0], y: [0, -30, 0], opacity: [0.2, 0.3, 0.2] }}
+        transition={{ duration: 10, repeat: Infinity, ease: "easeInOut" }}
+        className="absolute top-0 right-0 w-96 h-96 blur-[100px] pointer-events-none"
         style={{ background: "radial-gradient(circle, #38BDF8 0%, transparent 70%)" }}
       />
 
       {/* Bottom-left accent */}
-      <div
-        className="absolute bottom-0 left-0 w-80 h-80 opacity-15 blur-3xl pointer-events-none"
+      <motion.div
+        animate={{ x: [0, -30, 0], y: [0, 30, 0], opacity: [0.15, 0.25, 0.15] }}
+        transition={{ duration: 12, repeat: Infinity, ease: "easeInOut" }}
+        className="absolute bottom-0 left-0 w-80 h-80 blur-[100px] pointer-events-none"
         style={{ background: "radial-gradient(circle, #22C55E 0%, transparent 70%)" }}
       />
 
       {/* Content */}
       <div className="relative z-10 max-w-5xl mx-auto px-6 text-center">
 
-        {/* Available badge */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.1 }}
-          className="inline-flex items-center gap-2 px-4 py-2 rounded-full mb-8 border border-indigo-500/30 bg-indigo-500/10 text-indigo-300 text-sm font-medium"
+          className="inline-flex items-center gap-2 px-4 py-2 rounded-full mb-8 border border-indigo-500/30 bg-indigo-500/10 text-indigo-300 text-sm font-medium hover:bg-indigo-500/20 transition-colors cursor-default"
         >
           <Sparkles size={14} className="text-indigo-400" />
-          Available for opportunities
-          <span className="w-2 h-2 rounded-full bg-green-400 animate-pulse" />
+          Currently Building AI Agents
+          <span className="w-2 h-2 rounded-full bg-green-400 animate-pulse ml-1" />
         </motion.div>
 
         {/* Name */}
