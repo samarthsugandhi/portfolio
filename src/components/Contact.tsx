@@ -85,7 +85,7 @@ export default function Contact() {
   };
 
   return (
-    <section id="contact" ref={ref} className="section-padding relative overflow-hidden">
+    <section id="contact" ref={ref} className="py-24 relative overflow-hidden bg-[#0A0E17]">
       {/* Top separator */}
       <div
         className="absolute left-1/2 -translate-x-1/2 top-0 w-full h-px opacity-20"
@@ -246,14 +246,14 @@ export default function Contact() {
                 type="submit"
                 id="contact-submit"
                 disabled={status === "sending" || status === "success"}
-                whileHover={status === "idle" ? { scale: 1.02, boxShadow: "0 0 30px rgba(99,102,241,0.35)" } : {}}
+                whileHover={status === "idle" ? { scale: 1.05 } : {}}
                 whileTap={{ scale: 0.98 }}
-                className={`w-full flex items-center justify-center gap-2.5 px-6 py-3.5 rounded-xl font-semibold text-sm transition-all duration-300 cursor-pointer disabled:opacity-70 disabled:cursor-not-allowed ${
+                className={`w-full flex items-center justify-center gap-2.5 px-6 py-3 rounded-xl font-semibold text-sm transition-all duration-300 cursor-pointer disabled:opacity-70 disabled:cursor-not-allowed shadow-lg shadow-indigo-500/30 ${
                   status === "success"
-                    ? "bg-green-500/20 border border-green-500/40 text-green-400"
+                    ? "bg-green-500/20 border border-green-500/40 text-green-400 shadow-none"
                     : status === "error"
-                    ? "bg-red-500/20 border border-red-500/40 text-red-400"
-                    : "bg-indigo-500 hover:bg-indigo-400 text-white shadow-lg shadow-indigo-500/25"
+                    ? "bg-red-500/20 border border-red-500/40 text-red-400 shadow-none"
+                    : "bg-indigo-600 hover:bg-indigo-500 text-white"
                 }`}
               >
                 {status === "sending" && (
