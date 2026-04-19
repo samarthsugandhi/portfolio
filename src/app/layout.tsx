@@ -19,8 +19,7 @@ export const metadata: Metadata = {
   authors: [{ name: "Samarth Sugandhi" }],
   openGraph: {
     title: "Samarth Sugandhi — Full Stack Developer",
-    description:
-      "Building AI-powered web applications and scalable systems.",
+    description: "Building AI-powered web applications and scalable systems.",
     type: "website",
     locale: "en_US",
   },
@@ -33,12 +32,10 @@ export const metadata: Metadata = {
 
 export default function RootLayout({
   children,
-}: Readonly<{
-  children: React.ReactNode;
-}>) {
+}: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className="bg-[#0B0F19] text-slate-200 antialiased">
+      <body className="bg-[#0A0A0A] text-[#EDEDED] antialiased">
         <CustomCursor />
         <div className="noise-overlay" aria-hidden="true" />
         {children}

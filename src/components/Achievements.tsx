@@ -4,92 +4,101 @@ import { useRef } from "react";
 import { motion, useInView } from "framer-motion";
 import { achievements } from "@/lib/data";
 
+const statsRow = [
+  { v: "2+",  l: "Hackathons"  },
+  { v: "24h", l: "Sprint"      },
+  { v: "1st", l: "Placement"   },
+];
+
 export default function Achievements() {
-  const ref = useRef<HTMLElement>(null);
-  const inView = useInView(ref, { once: true, margin: "-100px" });
+  const ref    = useRef<HTMLElement>(null);
+  const inView = useInView(ref, { once: true, margin: "-80px" });
 
   return (
-    <section id="achievements" ref={ref} className="section-padding relative overflow-hidden">
-      {/* Background glow */}
-      <div className="absolute left-1/2 -translate-x-1/2 top-0 w-full h-px opacity-30 bg-gradient-to-r from-transparent via-amber-500 to-transparent" />
+    <section
+      id="achievements"
+      ref={ref}
+      className="bg-[#0A0A0A] border-t border-white/[0.07] overflow-hidden"
+    >
+      {/* Section label */}
+      <div className="flex items-center justify-between px-[6vw] py-5 border-b border-white/[0.07]">
+        <span className="text-white/25 text-[10px] uppercase tracking-[0.18em] font-semibold">
+          Recognition
+        </span>
+        <span className="text-white/20 text-[10px] font-mono">05</span>
+      </div>
 
-      <div className="max-w-4xl mx-auto px-6 relative z-10">
-        <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          animate={inView ? { opacity: 1, y: 0 } : {}}
-          transition={{ duration: 0.6 }}
-          className="mb-20 text-center"
-        >
-          <span className="text-amber-500 text-sm font-bold uppercase tracking-widest mb-4 inline-block">
-            Recognition & Impact
-          </span>
-          <h2 className="text-4xl md:text-5xl font-black text-white leading-tight font-display mb-4">
-            Wins that matter.
-          </h2>
-          <p className="text-slate-400 max-w-md mx-auto text-base">
-            Results from competing and building under pressure.
-          </p>
-        </motion.div>
+      <div className="px-[6vw] py-20 md:py-28 grid md:grid-cols-[1fr_1.4fr] gap-16 md:gap-20 items-start">
 
-        {/* Timeline Layout */}
-        <div className="relative border-l border-slate-700/50 pl-8 md:pl-12 ml-4 md:ml-0 space-y-12">
+        {/* ── Left: heading + subtitle ──────────────────────── */}
+        <div>
+          <div className="overflow-hidden">
+            <motion.h2
+              initial={{ y: "105%" }}
+              animate={inView ? { y: 0 } : {}}
+              transition={{ duration: 0.82, ease: [0.33, 1, 0.68, 1] as [number, number, number, number] }}
+              className="font-display text-white uppercase leading-none"
+              style={{ fontSize: "clamp(2.5rem, 8vw, 7rem)" }}
+            >
+              Wins That<br />Matter.
+            </motion.h2>
+          </div>
+
+          <motion.p
+            initial={{ opacity: 0, y: 18 }}
+            animate={inView ? { opacity: 1, y: 0 } : {}}
+            transition={{ delay: 0.38, duration: 0.6 }}
+            className="text-white/38 text-base leading-relaxed mt-8 max-w-xs"
+          >
+            Results from competing and building under real time pressure — against
+            real teams, on real problems.
+          </motion.p>
+
+          {/* Stats */}
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={inView ? { opacity: 1 } : {}}
+            transition={{ delay: 0.55, duration: 0.6 }}
+            className="flex gap-10 mt-14 pt-10 border-t border-white/[0.07]"
+          >
+            {statsRow.map((s) => (
+              <div key={s.l}>
+                <p className="font-display text-[2.8rem] text-white leading-none">{s.v}</p>
+                <p className="text-white/30 text-[10px] uppercase tracking-[0.15em] mt-1.5">{s.l}</p>
+              </div>
+            ))}
+          </motion.div>
+        </div>
+
+        {/* ── Right: achievement list ────────────────────────── */}
+        <div className="border-t border-white/[0.07]">
           {achievements.map((item, i) => (
             <motion.div
               key={item.id}
-              initial={{ opacity: 0, x: -30 }}
+              initial={{ opacity: 0, x: 24 }}
               animate={inView ? { opacity: 1, x: 0 } : {}}
-              transition={{ duration: 0.6, delay: i * 0.2 }}
-              className={`relative p-8 rounded-2xl glass-panel group transition-all duration-300 ${item.highlight ? "border-amber-500/30" : "border-slate-700/50"}`}
+              transition={{ delay: 0.3 + i * 0.15, duration: 0.6 }}
+              className="group flex items-start gap-6 py-9 border-b border-white/[0.07] hover:bg-white/[0.02] -mx-[6vw] px-[6vw] transition-colors duration-300"
             >
-              {/* Timeline marker / Icon */}
-              <div 
-                className={`absolute -left-[54px] md:-left-[76px] top-6 w-12 h-12 rounded-full border-4 border-slate-900 flex items-center justify-center text-xl shadow-xl z-20 transition-transform group-hover:scale-110 ${item.highlight ? "bg-amber-500/20 text-amber-400 border-amber-500/50 ring-4 ring-amber-500/10 animate-pulse" : "bg-slate-800 text-slate-300 border-slate-600"}`}
-                style={{ backgroundColor: `${item.color}20`, borderColor: `${item.color}50` }}
-              >
-                {item.icon}
-              </div>
-
-              {/* Background Glow if highlighted */}
-              {item.highlight && (
-                <div className="absolute inset-0 bg-gradient-to-r from-amber-500/5 to-transparent rounded-2xl pointer-events-none" />
-              )}
-
-              <div className="relative z-10">
-                <span 
-                  className="inline-block px-3 py-1 text-[10px] font-bold uppercase tracking-widest rounded-full mb-4 border"
-                  style={{ color: item.color, borderColor: `${item.color}40`, backgroundColor: `${item.color}10` }}
+              <span className="text-2xl flex-shrink-0 mt-0.5">{item.icon}</span>
+              <div className="flex-1">
+                <span className="text-white/25 text-[10px] font-mono">{item.year}</span>
+                <h3
+                  className="font-display text-white uppercase mt-1 leading-none"
+                  style={{ fontSize: "clamp(1.4rem, 3vw, 2.2rem)" }}
                 >
-                  {item.year}
-                </span>
-                
-                <h3 className="text-2xl font-black text-white font-display mb-1">{item.title}</h3>
-                <h4 className="text-sm font-bold uppercase tracking-wide mb-4" style={{ color: item.color }}>{item.subtitle}</h4>
-                <p className="text-slate-400 leading-relaxed text-sm md:text-base">{item.description}</p>
+                  {item.title}
+                </h3>
+                <p className="text-white/30 text-[10px] uppercase tracking-[0.14em] mt-2">
+                  {item.subtitle}
+                </p>
+                <p className="text-white/42 text-sm leading-relaxed mt-3">
+                  {item.description}
+                </p>
               </div>
             </motion.div>
           ))}
         </div>
-
-        {/* Stats */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={inView ? { opacity: 1, y: 0 } : {}}
-          transition={{ duration: 0.6, delay: 0.6 }}
-          className="mt-20 pt-10 border-t border-slate-800 flex flex-wrap items-center justify-center gap-10 md:gap-16"
-        >
-          {[
-            { v: "2+", l: "Hackathons" },
-            { v: "24h", l: "Sprinter" },
-            { v: "1st", l: "Placement" }
-          ].map((stat) => (
-            <div key={stat.l} className="text-center group">
-              <div className="text-4xl font-black text-transparent bg-clip-text bg-gradient-to-r from-white to-slate-500 mb-1 font-display group-hover:from-amber-400 group-hover:to-amber-600 transition-all">
-                {stat.v}
-              </div>
-              <div className="text-xs font-bold text-slate-500 uppercase tracking-widest">{stat.l}</div>
-            </div>
-          ))}
-        </motion.div>
       </div>
     </section>
   );

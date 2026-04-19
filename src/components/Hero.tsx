@@ -1,108 +1,114 @@
 "use client";
 
-import { motion } from "framer-motion";
-import { useEffect, useState } from "react";
+import { useRef } from "react";
+import { motion, useInView } from "framer-motion";
+import { ArrowUpRight } from "lucide-react";
+
+const stats = [
+  { value: "4+",   label: "Projects Shipped"  },
+  { value: "2×",   label: "Hackathon Winner"   },
+  { value: "100",  label: "Lighthouse Score"   },
+];
+
+const lines = [
+  { text: "I BUILD",        accent: false },
+  { text: "SYSTEMS",        accent: true  },
+  { text: "THAT ACTUALLY",  accent: false },
+  { text: "WORK.",          accent: false },
+];
 
 export default function Hero() {
-  const roles = [
-    "Hackathon Winner 🏆",
-    "Building AI Agents 🤖",
-    "Full Stack Developer 💻",
-  ];
+  const ref    = useRef<HTMLElement>(null);
+  const inView = useInView(ref, { once: true });
 
-  const [index, setIndex] = useState(0);
+  const scrollTo = (id: string) =>
+    document.getElementById(id)?.scrollIntoView({ behavior: "smooth" });
 
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setIndex((prev) => (prev + 1) % roles.length);
-    }, 2000);
-    return () => clearInterval(interval);
-  }, []);
+  const reveal = (i: number) => ({
+    hidden:  { y: "115%", opacity: 0 },
+    visible: {
+      y: 0, opacity: 1,
+      transition: { delay: 0.15 + i * 0.13, duration: 0.85, ease: [0.33, 1, 0.68, 1] as [number, number, number, number] },
+    },
+  });
 
   return (
-    <section className="relative min-h-screen flex items-center justify-center bg-[#0B0F19] overflow-hidden px-6">
-
-      {/* Mouse Glow */}
-      <div className="pointer-events-none absolute w-[600px] h-[600px] bg-indigo-500/20 rounded-full blur-3xl animate-pulse" />
-
-      {/* Background blobs */}
-      <div className="absolute w-[500px] h-[500px] bg-indigo-600/20 rounded-full blur-3xl top-[-100px] left-[-100px]" />
-      <div className="absolute w-[400px] h-[400px] bg-cyan-500/20 rounded-full blur-3xl bottom-[-100px] right-[-100px]" />
-
-      {/* Grid */}
-      <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.05)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.05)_1px,transparent_1px)] bg-[size:40px_40px]" />
-
-      <div className="relative z-10 max-w-6xl w-full grid md:grid-cols-2 gap-12 items-center">
-
-        {/* LEFT */}
-        <div>
-          <motion.h1
-            initial={{ opacity: 0, y: 40 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="text-4xl md:text-6xl font-bold text-white leading-tight"
+    <section
+      id="hero"
+      ref={ref}
+      className="relative min-h-screen flex flex-col bg-[#0A0A0A] border-b border-white/[0.07]"
+    >
+      {/* ── Stats bar ─────────────────────────────────────────── */}
+      <div className="grid grid-cols-3 border-b border-white/[0.07] pt-24 md:pt-28">
+        {stats.map((s, i) => (
+          <motion.div
+            key={s.label}
+            initial={{ opacity: 0, y: 14 }}
+            animate={inView ? { opacity: 1, y: 0 } : {}}
+            transition={{ delay: 0.05 + i * 0.1, duration: 0.55 }}
+            className={`px-[4vw] md:px-[6vw] py-6 ${i < 2 ? "border-r border-white/[0.07]" : ""}`}
           >
-            Building systems,
-            <span className="block bg-gradient-to-r from-indigo-400 via-cyan-400 to-blue-500 text-transparent bg-clip-text">
-              not just websites.
-            </span>
-          </motion.h1>
+            <p className="font-display text-[8vw] md:text-5xl lg:text-6xl text-white leading-none">{s.value}</p>
+            <p className="text-white/30 text-[10px] uppercase tracking-[0.15em] mt-1.5">{s.label}</p>
+          </motion.div>
+        ))}
+      </div>
 
-          {/* Animated Role */}
+      {/* ── Main headline ──────────────────────────────────────── */}
+      <div className="flex-1 flex items-center px-[4vw] md:px-[5vw] py-14 md:py-20">
+        <div className="w-full">
+          {lines.map((line, i) => (
+            <div key={i} className="overflow-hidden leading-none">
+              <motion.h1
+                variants={reveal(i)}
+                initial="hidden"
+                animate={inView ? "visible" : "hidden"}
+                className={[
+                  "font-display leading-[0.84] tracking-tight block select-none",
+                  "text-[14vw] md:text-[13vw]",
+                  line.accent ? "text-[#7fb069]" : "text-white",
+                ].join(" ")}
+              >
+                {line.text}
+              </motion.h1>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* ── Bottom strip ──────────────────────────────────────── */}
+      <div className="grid md:grid-cols-2 border-t border-white/[0.07]">
+        <div className="px-[6vw] py-9 border-b md:border-b-0 md:border-r border-white/[0.07]">
           <motion.p
-            key={index}
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="mt-4 text-indigo-400 font-medium"
+            initial={{ opacity: 0 }}
+            animate={inView ? { opacity: 1 } : {}}
+            transition={{ delay: 0.75, duration: 0.6 }}
+            className="text-white/45 text-base md:text-lg leading-relaxed max-w-md"
           >
-            {roles[index]}
+            I don&apos;t just build websites. I architect scalable backend systems,
+            autonomous agents, and fluid interfaces to solve real-world problems.
           </motion.p>
-
-          <motion.p className="mt-6 text-gray-400 max-w-xl">
-            I design and develop AI-powered platforms and scalable web applications with real-world impact.
-          </motion.p>
-
-          {/* Buttons */}
-          <div className="mt-8 flex gap-4">
-            <a
-              href="#projects"
-              className="px-6 py-3 rounded-xl bg-indigo-600 hover:bg-indigo-500 shadow-lg shadow-indigo-600/30 transition"
-            >
-              View Projects
-            </a>
-
-            <a
-              href="#contact"
-              className="px-6 py-3 rounded-xl border border-gray-600 hover:border-indigo-400 transition"
-            >
-              Contact Me
-            </a>
-          </div>
-
-          {/* Badge */}
-          <p className="mt-6 text-sm text-gray-500">
-            🚧 Exploring AI Agents & Automation Systems
-          </p>
         </div>
 
-        {/* RIGHT */}
         <motion.div
-          initial={{ opacity: 0, scale: 0.8 }}
-          animate={{ opacity: 1, scale: 1 }}
-          className="relative flex justify-center items-center"
+          initial={{ opacity: 0 }}
+          animate={inView ? { opacity: 1 } : {}}
+          transition={{ delay: 0.85, duration: 0.5 }}
+          className="px-[6vw] py-9 flex flex-wrap items-center gap-4"
         >
-          <div className="w-[300px] h-[300px] bg-gradient-to-r from-indigo-500 via-blue-500 to-cyan-500 rounded-full blur-3xl opacity-40 animate-pulse" />
-
-          <div className="absolute backdrop-blur-lg bg-white/5 border border-white/10 rounded-2xl p-6 text-center shadow-xl hover:scale-105 transition">
-            <p className="text-gray-300 text-sm">Full Stack Developer</p>
-            <h2 className="text-white text-xl font-semibold mt-2">
-              Samarth Sugandhi
-            </h2>
-            <p className="text-gray-400 text-xs mt-2">
-              Hackathon Winner 🏆
-            </p>
-          </div>
+          <button
+            onClick={() => scrollTo("projects")}
+            className="flex items-center gap-2.5 px-7 py-4 rounded-full bg-[#7fb069] hover:bg-[#6a9658] text-[#0A0A0A] font-bold text-[11px] uppercase tracking-widest transition-all duration-300 hover:scale-105 active:scale-95"
+          >
+            Explore Work <ArrowUpRight size={15} />
+          </button>
+          <button
+            onClick={() => scrollTo("contact")}
+            className="flex items-center gap-2.5 px-7 py-4 rounded-full border border-white/15 text-white hover:border-white/40 hover:bg-white/[0.04] font-bold text-[11px] uppercase tracking-widest transition-all duration-300"
+          >
+            Contact
+          </button>
         </motion.div>
-
       </div>
     </section>
   );

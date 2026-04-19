@@ -1,111 +1,173 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Home, User, Terminal, Blocks, Trophy, Mail } from "lucide-react";
 
 const navLinks = [
-  { id: "hero", label: "Home", icon: Home },
-  { id: "about", label: "About", icon: User },
-  { id: "projects", label: "Projects", icon: Terminal },
-  { id: "skills", label: "Skills", icon: Blocks },
-  { id: "achievements", label: "Achievements", icon: Trophy },
-  { id: "contact", label: "Contact", icon: Mail },
+  { id: "hero",         label: "Home",     num: "01" },
+  { id: "about",        label: "About",    num: "02" },
+  { id: "projects",     label: "Projects", num: "03" },
+  { id: "skills",       label: "Stack",    num: "04" },
+  { id: "contact",      label: "Contact",  num: "05" },
 ];
 
 export default function Navbar() {
-  const [activeSection, setActiveSection] = useState("hero");
-  const [isVisible, setIsVisible] = useState(true);
-  const [lastScrollY, setLastScrollY] = useState(0);
+  const [open,    setOpen]    = useState(false);
+  const [visible, setVisible] = useState(true);
+  const [time,    setTime]    = useState("");
+  const lastY = useRef(0);
 
+  /* Local time */
   useEffect(() => {
-    const handleScroll = () => {
-      const currentScrollY = window.scrollY;
-      
-      // Auto-hide logic: hidden if scrolling down past 300px, visible if scrolling up
-      if (currentScrollY > 300) {
-        setIsVisible(currentScrollY < lastScrollY);
-      } else {
-        setIsVisible(true);
-      }
-      setLastScrollY(currentScrollY);
-
-      // Active section spy
-      const sections = navLinks.map((l) => l.id);
-      for (const id of [...sections].reverse()) {
-        const el = document.getElementById(id);
-        if (el && currentScrollY >= el.offsetTop - window.innerHeight / 2) {
-          setActiveSection(id);
-          break;
-        }
-      }
+    const tick = () => {
+      const now = new Date();
+      setTime(
+        now.toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit", hour12: false })
+      );
     };
-    
-    // Use requestAnimationFrame for scroll performance
-    let ticking = false;
-    const scrollListener = () => {
-      if (!ticking) {
-        window.requestAnimationFrame(() => {
-          handleScroll();
-          ticking = false;
-        });
-        ticking = true;
-      }
+    tick();
+    const id = setInterval(tick, 1000);
+    return () => clearInterval(id);
+  }, []);
+
+  /* Hide on scroll down */
+  useEffect(() => {
+    const onScroll = () => {
+      const y = window.scrollY;
+      setVisible(y < 100 || y < lastY.current);
+      lastY.current = y;
     };
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
 
-    window.addEventListener("scroll", scrollListener, { passive: true });
-    return () => window.removeEventListener("scroll", scrollListener);
-  }, [lastScrollY]);
+  /* Lock body scroll when menu open */
+  useEffect(() => {
+    document.body.style.overflow = open ? "hidden" : "";
+    return () => { document.body.style.overflow = ""; };
+  }, [open]);
 
-  const handleNavClick = (e: React.MouseEvent<HTMLAnchorElement>, id: string) => {
-    e.preventDefault();
-    const target = document.getElementById(id);
-    if (target) {
-      target.scrollIntoView({ behavior: "smooth", block: "start" });
-    }
+  const go = (id: string) => {
+    setOpen(false);
+    setTimeout(
+      () => document.getElementById(id)?.scrollIntoView({ behavior: "smooth", block: "start" }),
+      open ? 420 : 0
+    );
   };
 
   return (
-    <AnimatePresence>
-      <motion.div
-        initial={{ y: 100, opacity: 0 }}
-        animate={{ y: isVisible ? 0 : 100, opacity: isVisible ? 1 : 0 }}
-        transition={{ duration: 0.4, ease: "easeInOut" }}
-        className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 px-4 pointer-events-none"
+    <>
+      {/* Floating bar */}
+      <motion.header
+        initial={{ y: -100, opacity: 0 }}
+        animate={{ y: visible ? 0 : -100, opacity: visible ? 1 : 0 }}
+        transition={{ duration: 0.38, ease: "easeOut" }}
+        className="fixed top-5 left-0 right-0 z-50 flex justify-between items-center px-[5vw] pointer-events-none"
       >
-        <nav className="pointer-events-auto flex items-center gap-1 sm:gap-2 p-2 sm:p-3 rounded-2xl bg-black/40 backdrop-blur-xl border border-white/10 shadow-2xl shadow-indigo-500/10 transition-all">
-          {navLinks.map((link) => {
-            const isActive = activeSection === link.id;
-            
-            return (
-              <motion.a
-                key={link.id}
-                href={`#${link.id}`}
-                onClick={(e) => handleNavClick(e, link.id)}
-                whileHover={{ scale: 1.15, y: -4 }}
-                whileTap={{ scale: 0.95 }}
-                className="relative group p-2.5 sm:p-3 rounded-xl flex items-center justify-center transition-colors"
-              >
-                {isActive && (
-                  <motion.div
-                    layoutId="activeDockBubble"
-                    className="absolute inset-0 bg-indigo-500/20 shadow-[0_0_15px_rgba(99,102,241,0.3)] rounded-xl border border-indigo-500/30"
-                    transition={{ type: "spring", stiffness: 300, damping: 20 }}
-                  />
-                )}
-                <span className={`relative z-10 transition-colors duration-300 ${isActive ? "text-indigo-400" : "text-slate-400 group-hover:text-white"}`}>
-                  <link.icon size={20} strokeWidth={isActive ? 2.5 : 2} />
-                </span>
+        <div className="pointer-events-auto">
+          <button
+            onClick={() => go("hero")}
+            className="font-display text-[1.35rem] tracking-[0.15em] text-white hover:text-[#7fb069] transition-colors duration-300 uppercase"
+          >
+            Samarth
+          </button>
+        </div>
 
-                {/* Tooltip */}
-                <span className="absolute -top-10 scale-0 group-hover:scale-100 transition-transform origin-bottom px-2 shadow-xl py-1 rounded bg-slate-800 border border-slate-700 text-slate-200 text-xs font-bold whitespace-nowrap opacity-0 group-hover:opacity-100 z-50">
-                  {link.label}
-                </span>
-              </motion.a>
-            );
-          })}
-        </nav>
-      </motion.div>
-    </AnimatePresence>
+        <button
+          onClick={() => setOpen(true)}
+          className="pointer-events-auto flex items-center gap-2.5 px-5 py-2.5 rounded-full bg-white text-[#0A0A0A] font-bold text-[11px] uppercase tracking-widest hover:bg-[#7fb069] transition-colors duration-300 shadow-lg"
+        >
+          <span className="w-1.5 h-1.5 rounded-full bg-[#7fb069] animate-pulse" />
+          Menu
+        </button>
+      </motion.header>
+
+      {/* Full-screen overlay */}
+      <AnimatePresence>
+        {open && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.35 }}
+            className="fixed inset-0 z-[100] bg-[#0A0A0A] flex flex-col justify-between px-[6vw] py-8 md:py-10"
+          >
+            {/* Top row */}
+            <div className="flex justify-between items-center">
+              <span className="font-display text-xl tracking-widest text-white uppercase">Samarth</span>
+              <button
+                onClick={() => setOpen(false)}
+                className="text-white/40 hover:text-white transition-colors text-[11px] uppercase tracking-widest font-semibold flex items-center gap-3"
+              >
+                Close
+                <span className="font-display text-2xl leading-none">×</span>
+              </button>
+            </div>
+
+            {/* Nav links */}
+            <nav className="flex flex-col gap-0">
+              {navLinks.map((link, i) => (
+                <motion.div
+                  key={link.id}
+                  initial={{ y: 70, opacity: 0 }}
+                  animate={{ y: 0, opacity: 1 }}
+                  exit={{ y: 30, opacity: 0 }}
+                  transition={{ delay: i * 0.07, duration: 0.55, ease: [0.33, 1, 0.68, 1] as [number, number, number, number] }}
+                  className="overflow-hidden border-b border-white/[0.06]"
+                >
+                  <button
+                    onClick={() => go(link.id)}
+                    className="flex items-baseline gap-5 md:gap-8 py-3 group w-full text-left"
+                  >
+                    <span className="text-white/20 text-xs font-mono pt-1 min-w-[28px]">
+                      {link.num}
+                    </span>
+                    <span className="font-display text-[13vw] md:text-[8vw] text-white/15 group-hover:text-white transition-colors duration-300 leading-[1.1] uppercase tracking-tight">
+                      {link.label}
+                    </span>
+                  </button>
+                </motion.div>
+              ))}
+            </nav>
+
+            {/* Footer row */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.45 }}
+              className="flex flex-col sm:flex-row justify-between items-start sm:items-end gap-4 text-white/25 text-xs uppercase tracking-widest"
+            >
+              <div className="space-y-1">
+                <p>India — {time}</p>
+                <a
+                  href="mailto:samarthsugandhi04@gmail.com"
+                  className="hover:text-white transition-colors block"
+                >
+                  samarthsugandhi04@gmail.com
+                </a>
+              </div>
+              <div className="flex gap-6">
+                <a
+                  href="https://github.com/samarthsugandhi"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="hover:text-white transition-colors"
+                >
+                  GitHub
+                </a>
+                <a
+                  href="https://linkedin.com/in/samarthsugandhi"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="hover:text-white transition-colors"
+                >
+                  LinkedIn
+                </a>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </>
   );
 }

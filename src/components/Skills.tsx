@@ -1,84 +1,111 @@
 "use client";
 
-import { useRef } from "react";
-import { motion, useInView } from "framer-motion";
+import { useRef, useState } from "react";
+import { motion, useInView, AnimatePresence } from "framer-motion";
 import { skills } from "@/lib/data";
 
-const containerVariants = {
-  hidden: {},
-  visible: { transition: { staggerChildren: 0.1 } },
-};
-
 export default function Skills() {
-  const ref = useRef<HTMLElement>(null);
-  const inView = useInView(ref, { once: true, margin: "-100px" });
+  const ref      = useRef<HTMLElement>(null);
+  const inView   = useInView(ref, { once: true, margin: "-100px" });
+  const [open, setOpen] = useState<number>(0);
+
+  const toggle = (i: number) => setOpen(open === i ? -1 : i);
 
   return (
-    <section id="skills" ref={ref} className="section-padding relative overflow-hidden bg-slate-900/40 border-y border-white/5">
-      {/* Background dot pattern */}
-      <div className="absolute inset-0 dot-pattern opacity-30" />
+    <section
+      id="skills"
+      ref={ref}
+      className="bg-[#F0EDE6] text-[#111111] overflow-hidden"
+    >
+      {/* Section label */}
+      <div className="flex items-center justify-between px-[6vw] py-5 border-b border-black/[0.08]">
+        <span className="text-[#111111]/35 text-[10px] uppercase tracking-[0.18em] font-semibold">
+          Stack
+        </span>
+        <span className="text-[#111111]/25 text-[10px] font-mono">04</span>
+      </div>
 
-      <div className="max-w-6xl mx-auto px-6 relative z-10">
-        <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          animate={inView ? { opacity: 1, y: 0 } : {}}
-          transition={{ duration: 0.6 }}
-          className="mb-16 text-center"
-        >
-          <div className="inline-flex items-center gap-3 mb-4">
-            <span className="text-indigo-400 text-sm font-semibold uppercase tracking-widest">
-              Tech Arsenal
-            </span>
-          </div>
-          <h2 className="text-4xl md:text-5xl font-black text-white leading-tight font-display mb-4">
+      <div className="px-[6vw] py-20 md:py-24">
+
+        {/* ── Headline ──────────────────────────────────────── */}
+        <div className="overflow-hidden mb-16">
+          <motion.h2
+            initial={{ y: "105%" }}
+            animate={inView ? { y: 0 } : {}}
+            transition={{ duration: 0.82, ease: [0.33, 1, 0.68, 1] as [number, number, number, number] }}
+            className="font-display text-[#111111] uppercase leading-none"
+            style={{ fontSize: "clamp(2.5rem, 9vw, 8rem)" }}
+          >
             Tools I build with.
-          </h2>
-          <p className="max-w-lg mx-auto text-slate-400">
-            A carefully curated stack focused on performance, scalability, and developer experience.
-          </p>
-        </motion.div>
+          </motion.h2>
+        </div>
 
-        {/* Bento grid layout */}
-        <motion.div 
-          variants={containerVariants}
-          initial="hidden"
-          animate={inView ? "visible" : "hidden"}
-          className="grid md:grid-cols-2 gap-6"
-        >
-          {skills.map((group, gIdx) => (
+        {/* ── Accordion rows ────────────────────────────────── */}
+        <div className="border-t border-black/[0.08]">
+          {skills.map((group, i) => (
             <motion.div
               key={group.category}
-              initial={{ opacity: 0, y: 20 }}
-              animate={inView ? { opacity: 1, y: 0 } : {}}
-              transition={{ duration: 0.5 }}
-              whileHover={{ scale: 1.02 }}
-              className="glass-card p-8 md:p-10 border border-slate-700/50 hover:border-indigo-500/30 transition-all duration-300"
+              initial={{ opacity: 0 }}
+              animate={inView ? { opacity: 1 } : {}}
+              transition={{ delay: 0.25 + i * 0.08 }}
+              className="border-b border-black/[0.08]"
             >
-              <h3 className="text-lg font-bold text-white mb-6 uppercase tracking-wider text-slate-300">
-                {group.category}
-              </h3>
-              <div className="flex flex-wrap gap-3">
-                {group.items.map((skill, sIdx) => (
-                  <motion.div
-                    key={skill}
-                    initial={{ opacity: 0, scale: 0.9 }}
-                    animate={inView ? { opacity: 1, scale: 1 } : {}}
-                    transition={{ delay: 0.1 * sIdx, duration: 0.4 }}
-                    whileHover={{ 
-                      y: -5, 
-                      scale: 1.05, 
-                      backgroundColor: "rgba(99,102,241,0.15)",
-                      borderColor: "rgba(99,102,241,0.4)" 
-                    }}
-                    className="px-4 py-2 rounded-xl bg-slate-800/80 border border-slate-600/50 text-slate-200 text-sm font-medium shadow-md transition-colors cursor-default"
+              {/* Row header */}
+              <button
+                onClick={() => toggle(i)}
+                className="w-full flex items-center justify-between py-6 md:py-7 group text-left"
+              >
+                <div className="flex items-baseline gap-6 md:gap-10">
+                  <span className="text-[#111111]/25 font-mono text-xs min-w-[1.8rem]">
+                    {String(i + 1).padStart(2, "0")}
+                  </span>
+                  <span
+                    className="font-display text-[#111111] uppercase group-hover:translate-x-2 transition-transform duration-300"
+                    style={{ fontSize: "clamp(1.6rem, 4vw, 3.5rem)", lineHeight: 1 }}
                   >
-                    {skill}
+                    {group.category}
+                  </span>
+                </div>
+                {/* Plus / minus */}
+                <motion.span
+                  animate={{ rotate: open === i ? 45 : 0 }}
+                  transition={{ duration: 0.28, ease: "easeOut" }}
+                  className="text-[#111111]/35 text-2xl font-light leading-none flex-shrink-0"
+                >
+                  +
+                </motion.span>
+              </button>
+
+              {/* Expandable skill tags */}
+              <AnimatePresence initial={false}>
+                {open === i && (
+                  <motion.div
+                    key="content"
+                    initial={{ height: 0, opacity: 0 }}
+                    animate={{ height: "auto", opacity: 1 }}
+                    exit={{ height: 0, opacity: 0 }}
+                    transition={{ duration: 0.38, ease: [0.33, 1, 0.68, 1] as [number, number, number, number] }}
+                    className="overflow-hidden"
+                  >
+                    <div className="flex flex-wrap gap-3 pb-8 pl-[calc(1.8rem+1.5rem+2.5rem)] md:pl-[calc(1.8rem+2.5rem+4rem)]">
+                      {group.items.map((skill, j) => (
+                        <motion.span
+                          key={skill}
+                          initial={{ opacity: 0, y: 8 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ delay: j * 0.04, duration: 0.3 }}
+                          className="px-4 py-2 rounded-full border border-black/[0.12] text-[#111111]/60 text-sm hover:border-[#7fb069] hover:text-[#111111] transition-all duration-200 cursor-default"
+                        >
+                          {skill}
+                        </motion.span>
+                      ))}
+                    </div>
                   </motion.div>
-                ))}
-              </div>
+                )}
+              </AnimatePresence>
             </motion.div>
           ))}
-        </motion.div>
+        </div>
       </div>
     </section>
   );

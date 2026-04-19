@@ -2,100 +2,136 @@
 
 import { useRef } from "react";
 import { motion, useInView } from "framer-motion";
-import { Wrench, Zap, Layers } from "lucide-react";
+import { ArrowUpRight } from "lucide-react";
 
-export default function WhyIBuild() {
-  const ref = useRef<HTMLElement>(null);
-  const inView = useInView(ref, { once: true, margin: "-100px" });
+interface BlockData {
+  num:         string;
+  title:       string;
+  tagline:     string;
+  desc:        string;
+  bg:          string;
+  textColor:   string;
+  mutedColor:  string;
+  borderColor: string;
+  scrollTo:    string;
+}
+
+const blocks: BlockData[] = [
+  {
+    num:         "01",
+    title:       "Full Stack\nEngineering",
+    tagline:     "( every line is impact )",
+    desc:        "I architect and build complete systems — from scalable database schemas and REST API design to performant, pixel-perfect user interfaces. I write clean code with long-term maintainability in mind.",
+    bg:          "#0A0A0A",
+    textColor:   "#EDEDED",
+    mutedColor:  "rgba(237,237,237,0.38)",
+    borderColor: "rgba(255,255,255,0.07)",
+    scrollTo:    "projects",
+  },
+  {
+    num:         "02",
+    title:       "AI &\nAutomation",
+    tagline:     "( intelligent systems )",
+    desc:        "Integrating LLMs and autonomous agents into real product workflows. From AI assistants to automated data pipelines — I build systems that replace manual overhead and deliver tangible value.",
+    bg:          "#C75B7A",
+    textColor:   "#0A0A0A",
+    mutedColor:  "rgba(10,10,10,0.48)",
+    borderColor: "rgba(0,0,0,0.12)",
+    scrollTo:    "projects",
+  },
+  {
+    num:         "03",
+    title:       "Systems\nDesign",
+    tagline:     "( choosing the right problem )",
+    desc:        "Before writing a line of code, I think deeply about the architecture. Role-based access, real-time data, race conditions, and edge cases — I plan for systems that scale beyond the demo.",
+    bg:          "#3D5A8E",
+    textColor:   "#F0EDE6",
+    mutedColor:  "rgba(240,237,230,0.45)",
+    borderColor: "rgba(0,0,0,0.12)",
+    scrollTo:    "about",
+  },
+];
+
+function Block({ block, index }: { block: BlockData; index: number }) {
+  const ref    = useRef<HTMLDivElement>(null);
+  const inView = useInView(ref, { once: true, margin: "-80px" });
+
+  const scrollTo = (id: string) =>
+    document.getElementById(id)?.scrollIntoView({ behavior: "smooth" });
 
   return (
-    <section ref={ref} className="py-24 relative overflow-hidden bg-[#0A0E17]">
-      {/* Abstract Background Elements */}
-      <div className="absolute top-0 right-0 w-full h-full bg-grid-pattern opacity-10 pointer-events-none" />
-      <div className="absolute bottom-0 left-1/4 w-[600px] h-[600px] bg-indigo-600/10 rounded-full blur-[120px] pointer-events-none" />
-
-      <div className="max-w-6xl mx-auto px-6 relative z-10">
-        <div className="flex flex-col md:flex-row items-center gap-16">
-          {/* Left: Text Content */}
-          <motion.div 
-            initial={{ opacity: 0, x: -40 }}
-            animate={inView ? { opacity: 1, x: 0 } : {}}
-            transition={{ duration: 0.7 }}
-            className="md:w-1/2 space-y-6"
+    <div ref={ref} style={{ backgroundColor: block.bg }} className="overflow-hidden">
+      <div
+        className="px-[6vw] py-20 md:py-28 grid md:grid-cols-[1fr_1.4fr] gap-12 md:gap-20 items-start border-b"
+        style={{ borderColor: block.borderColor }}
+      >
+        {/* Left — number + title */}
+        <div>
+          <motion.p
+            initial={{ opacity: 0 }}
+            animate={inView ? { opacity: 1 } : {}}
+            transition={{ delay: index * 0.04, duration: 0.5 }}
+            className="text-sm font-mono mb-5"
+            style={{ color: block.mutedColor }}
           >
-            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg border border-slate-700/60 bg-slate-800/40 text-slate-300 text-xs font-semibold uppercase tracking-wider">
-              <Zap size={14} className="text-amber-400" />
-              Philosophy
-            </div>
-            
-            <h2 className="text-4xl md:text-5xl font-black text-white leading-tight font-display">
-              Why I Build
-            </h2>
-            
-            <div className="space-y-4 text-slate-400 text-lg leading-relaxed">
-              <p>
-                <strong className="text-slate-200">I solve real problems.</strong> I don't just write code for the sake of it; I architect systems that eliminate friction and replace heavy manual workflows.
-              </p>
-              <p>
-                Whether it's an AI assistant streamlining academic interfaces or a complex automated fee management backend, my goal is to deliver <strong className="text-indigo-400 font-bold">systems, not just demos.</strong>
-              </p>
-            </div>
+            {block.num}
+          </motion.p>
 
-            <div className="pt-4 border-t border-slate-800">
-              <p className="text-xl font-medium text-slate-300 italic">
-                “I don’t just build apps. I build systems that replace manual work.”
-              </p>
-            </div>
-          </motion.div>
+          <div className="overflow-hidden">
+            <motion.h2
+              initial={{ y: "105%" }}
+              animate={inView ? { y: 0 } : {}}
+              transition={{ delay: 0.1, duration: 0.82, ease: [0.33, 1, 0.68, 1] as [number, number, number, number] }}
+              className="font-display leading-[0.88] uppercase whitespace-pre-line"
+              style={{
+                color: block.textColor,
+                fontSize: "clamp(3rem, 8vw, 7rem)",
+              }}
+            >
+              {block.title}
+            </motion.h2>
+          </div>
 
-          {/* Right: Visual Concept */}
-          <motion.div 
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={inView ? { opacity: 1, scale: 1 } : {}}
-            transition={{ duration: 0.8, delay: 0.2 }}
-            className="md:w-1/2 relative w-full h-[400px] md:h-[500px]"
+          <motion.p
+            initial={{ opacity: 0 }}
+            animate={inView ? { opacity: 1 } : {}}
+            transition={{ delay: 0.28, duration: 0.5 }}
+            className="mt-4 text-sm"
+            style={{ color: block.mutedColor }}
           >
-            {/* Layered Cards representing "Systems" */}
-            <div className="absolute inset-0 flex items-center justify-center">
-              {[0, 1, 2].map((i) => (
-                <motion.div
-                  key={i}
-                  animate={{ 
-                    y: [0, -10, 0], 
-                    rotate: [-6 + i * 6, -4 + i * 6, -6 + i * 6] 
-                  }}
-                  transition={{ 
-                    duration: 6, 
-                    repeat: Infinity, 
-                    delay: i * 0.5,
-                    ease: "easeInOut" 
-                  }}
-                  className="absolute w-[280px] h-[360px] rounded-2xl glass-card border flex flex-col justify-between p-6 shadow-2xl"
-                  style={{
-                    backgroundColor: `rgba(15, 23, 42, ${0.4 + i * 0.2})`,
-                    borderColor: `rgba(99, 102, 241, ${0.1 + i * 0.1})`,
-                    zIndex: i,
-                    transformOrigin: "bottom center"
-                  }}
-                >
-                  <div className="space-y-3">
-                    <div className="flex justify-between items-center opacity-50">
-                      <Layers size={20} className="text-white" />
-                      <div className="w-8 h-2 bg-slate-600 rounded-full" />
-                    </div>
-                    <div className="w-3/4 h-3 bg-slate-700 rounded-full" />
-                    <div className="w-1/2 h-3 bg-slate-700/60 rounded-full" />
-                  </div>
-                  <div className="mt-auto space-y-2">
-                    <div className="w-full h-12 bg-indigo-500/10 border border-indigo-500/20 rounded-xl" />
-                    <div className="w-full h-12 bg-slate-800/50 rounded-xl" />
-                  </div>
-                </motion.div>
-              ))}
-            </div>
-          </motion.div>
+            {block.tagline}
+          </motion.p>
         </div>
+
+        {/* Right — description + link */}
+        <motion.div
+          initial={{ opacity: 0, y: 22 }}
+          animate={inView ? { opacity: 1, y: 0 } : {}}
+          transition={{ delay: 0.32, duration: 0.65 }}
+          className="flex flex-col justify-between h-full gap-14 md:pt-4"
+        >
+          <p className="text-base md:text-lg leading-relaxed" style={{ color: block.mutedColor }}>
+            {block.desc}
+          </p>
+          <button
+            onClick={() => scrollTo(block.scrollTo)}
+            className="self-start flex items-center gap-2 text-[11px] uppercase tracking-[0.15em] font-bold hover:gap-4 transition-all duration-300"
+            style={{ color: block.textColor }}
+          >
+            Learn more <ArrowUpRight size={14} />
+          </button>
+        </motion.div>
       </div>
+    </div>
+  );
+}
+
+export default function WhyIBuild() {
+  return (
+    <section className="border-t border-white/[0.07]">
+      {blocks.map((block, i) => (
+        <Block key={block.num} block={block} index={i} />
+      ))}
     </section>
   );
 }
