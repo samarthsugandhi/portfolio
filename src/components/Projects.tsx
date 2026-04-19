@@ -243,10 +243,15 @@ function ProjectCard({ project, isFeatured, onClick }: { project: (typeof projec
                 {project.category}
               </span>
               {isFeatured && (
-                <span className="text-[11px] font-bold uppercase tracking-widest px-3 py-1.5 rounded-full border border-amber-500/30 bg-amber-500/10 text-amber-400 flex items-center gap-1.5">
-                  <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse" />
-                  Featured
-                </span>
+                <div className="flex items-center gap-2">
+                  <span className="text-[11px] font-bold uppercase tracking-widest px-3 py-1.5 rounded-full border border-amber-500/30 bg-amber-500/10 text-amber-400 flex items-center gap-1.5">
+                    <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse" />
+                    Featured
+                  </span>
+                  <span className="text-[11px] font-bold uppercase tracking-widest px-3 py-1.5 rounded-full border border-indigo-500/30 bg-indigo-500/10 text-indigo-400">
+                    🏆 Hackathon Winning Project
+                  </span>
+                </div>
               )}
             </div>
             <h3 className="text-2xl font-black text-white group-hover:text-indigo-300 transition-colors font-display">

@@ -19,10 +19,9 @@ const LinkedinIcon = () => (
 );
 
 const TYPING_WORDS = [
-  "Full Stack Developer",
-  "AI Enthusiast",
-  "Hackathon Winner",
-  "Problem Solver",
+  "Hackathon Winner 🏆",
+  "Building AI Agents",
+  "Creating Real-World Platforms",
 ];
 
 function TypingText() {
@@ -110,7 +109,7 @@ export default function Hero() {
           className="inline-flex items-center gap-2 px-4 py-2 rounded-full mb-8 border border-indigo-500/30 bg-indigo-500/10 text-indigo-300 text-sm font-medium hover:bg-indigo-500/20 transition-colors cursor-default"
         >
           <Sparkles size={14} className="text-indigo-400" />
-          Currently Building AI Agents
+          🚧 Exploring AI Agents & Automation Systems
           <span className="w-2 h-2 rounded-full bg-green-400 animate-pulse ml-1" />
         </motion.div>
 
@@ -122,7 +121,7 @@ export default function Hero() {
           className="text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-extrabold tracking-tight text-white mb-4 leading-none"
           style={{ fontFamily: "'Space Grotesk', sans-serif" }}
         >
-          {personalInfo.name}
+          <span className="gradient-text">Full Stack Developer</span> building AI-powered systems
         </motion.h1>
 
         {/* Typing animation */}
@@ -142,9 +141,7 @@ export default function Hero() {
           transition={{ duration: 0.6, delay: 0.5 }}
           className="max-w-2xl mx-auto text-slate-400 text-base sm:text-lg leading-relaxed mb-10"
         >
-          {personalInfo.tagline} — from hackathon-winning prototypes to
-          production-grade platforms at{" "}
-          <span className="text-indigo-400 font-medium">BEC</span>.
+          {personalInfo.tagline} — I design and build scalable web applications with real-world impact.
         </motion.p>
 
         {/* CTA Buttons */}
