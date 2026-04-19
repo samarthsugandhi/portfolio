@@ -12,12 +12,11 @@ export default function CustomCursor() {
   const dotX = useMotionValue(-100);
   const dotY = useMotionValue(-100);
 
-  // Apply spring physics for the lagging outer ring
-  const ringX = useSpring(dotX, { stiffness: 150, damping: 20, mass: 0.5 });
-  const ringY = useSpring(dotY, { stiffness: 150, damping: 20, mass: 0.5 });
+  // Apply spring physics for the lagging outer frame
+  const ringX = useSpring(dotX, { stiffness: 300, damping: 30, mass: 0.5 });
+  const ringY = useSpring(dotY, { stiffness: 300, damping: 30, mass: 0.5 });
 
   useEffect(() => {
-    // Only enable custom cursor on devices with a fine pointer (not touchscreens)
     if (window.matchMedia("(pointer: fine)").matches) {
       setIsMobile(false);
     }
@@ -37,7 +36,9 @@ export default function CustomCursor() {
         target.tagName === "BUTTON" ||
         target.tagName === "A" ||
         target.closest("button") ||
-        target.closest("a")
+        target.closest("a") ||
+        target.closest(".glass-card") ||
+        target.closest(".interactive")
       ) {
         setIsHovering(true);
       } else {
@@ -64,9 +65,9 @@ export default function CustomCursor() {
     <>
       <style dangerouslySetInnerHTML={{ __html: `* { cursor: none !important; }` }} />
       
-      {/* Outer Trailing Ring */}
+      {/* Outer Trailing Frame (Techathon style: brackets/box rotating) */}
       <motion.div
-        className="fixed top-0 left-0 w-8 h-8 rounded-full border border-indigo-400 pointer-events-none z-[9999] mix-blend-screen"
+        className="fixed top-0 left-0 w-10 h-10 border-[1.5px] border-amber-400/60 pointer-events-none z-[9999] flex items-center justify-center mix-blend-screen"
         style={{
           x: ringX,
           y: ringY,
@@ -74,15 +75,24 @@ export default function CustomCursor() {
           translateY: "-50%",
         }}
         animate={{
-          scale: isClicking ? 0.8 : isHovering ? 1.6 : 1,
-          backgroundColor: isHovering ? "rgba(99, 102, 241, 0.1)" : "transparent",
-          boxShadow: isHovering ? "0 0 15px rgba(99, 102, 241, 0.4)" : "none",
+          scale: isClicking ? 0.8 : isHovering ? 1.5 : 1,
+          rotate: isHovering ? 45 : 0,
+          borderRadius: isHovering ? "50%" : "4px",
+          backgroundColor: isHovering ? "rgba(250, 204, 21, 0.05)" : "transparent",
+          borderColor: isHovering ? "rgba(250, 204, 21, 0.8)" : "rgba(250, 204, 21, 0.4)",
         }}
-        transition={{ duration: 0.15 }}
-      />
+        transition={{ duration: 0.3, ease: "easeOut" }}
+      >
+        {/* Four inner corner markers to simulate the bracket crosshair frame */}
+        <div className="absolute top-0 right-0 w-1.5 h-1.5 border-t-2 border-r-2 border-amber-400 opacity-60" />
+        <div className="absolute bottom-0 right-0 w-1.5 h-1.5 border-b-2 border-r-2 border-amber-400 opacity-60" />
+        <div className="absolute bottom-0 left-0 w-1.5 h-1.5 border-b-2 border-l-2 border-amber-400 opacity-60" />
+        <div className="absolute top-0 left-0 w-1.5 h-1.5 border-t-2 border-l-2 border-amber-400 opacity-60" />
+      </motion.div>
+
       {/* Inner Fast Dot */}
       <motion.div
-        className="fixed top-0 left-0 w-2 h-2 rounded-full bg-cyan-400 pointer-events-none z-[9999]"
+        className="fixed top-0 left-0 w-1.5 h-1.5 rounded-full bg-amber-400 pointer-events-none z-[9999] shadow-[0_0_10px_#facc15]"
         style={{
           x: dotX,
           y: dotY,
@@ -90,10 +100,9 @@ export default function CustomCursor() {
           translateY: "-50%",
         }}
         animate={{
-          scale: isClicking ? 0 : isHovering ? 0 : 1,
-          opacity: isHovering ? 0 : 1
+          scale: isClicking ? 0.5 : isHovering ? 0.5 : 1,
         }}
-        transition={{ duration: 0.1 }}
+        transition={{ duration: 0.15 }}
       />
     </>
   );

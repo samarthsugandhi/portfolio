@@ -2,19 +2,35 @@
 
 @import "tailwindcss";
 
+@theme {
+  /* Techathon Site Color Mapping Overrides */
+  --color-indigo-300: #fef08a; /* yellow-200 */
+  --color-indigo-400: #facc15; /* yellow-400 */
+  --color-indigo-500: #eab308; /* yellow-500 */
+  --color-indigo-600: #ca8a04; /* yellow-600 */
+  --color-indigo-900: #713f12; /* yellow-900 */
+  
+  --color-blue-400: #facc15;
+  --color-blue-500: #eab308;
+  --color-blue-600: #ca8a04;
+
+  --color-cyan-400: #facc15;
+  --color-cyan-500: #eab308;
+}
+
 :root {
-  --bg-primary: #0B0F19;
-  --bg-secondary: #0F1628;
+  --bg-primary: #030712;
+  --bg-secondary: #111827;
   --bg-card: rgba(17, 24, 39, 0.4);
-  --color-indigo: #6366F1;
-  --color-indigo-light: #818CF8;
-  --color-blue: #3B82F6;
+  --color-indigo: #facc15;
+  --color-indigo-light: #fef08a;
+  --color-blue: #eab308;
   --color-green: #22C55E;
-  --color-sky: #38BDF8;
+  --color-sky: #facc15;
   --color-muted: #64748B;
-  --color-text: #E2E8F0;
-  --color-text-secondary: #94A3B8;
-  --border-subtle: rgba(99, 102, 241, 0.15);
+  --color-text: #F3F4F6;
+  --color-text-secondary: #9CA3AF;
+  --border-subtle: rgba(250, 204, 21, 0.15);
 }
 
 * {
@@ -41,7 +57,7 @@ h1, h2, h3, h4, h5, h6, .font-display {
 }
 
 ::selection {
-  background: rgba(99, 102, 241, 0.3);
+  background: rgba(250, 204, 21, 0.3);
   color: #fff;
 }
 
@@ -75,7 +91,7 @@ h1, h2, h3, h4, h5, h6, .font-display {
 
 /* Gradients */
 .gradient-text {
-  background: linear-gradient(135deg, #6366F1 0%, #3B82F6 50%, #38BDF8 100%);
+  background: linear-gradient(135deg, #facc15 0%, #eab308 50%, #ca8a04 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -89,7 +105,7 @@ h1, h2, h3, h4, h5, h6, .font-display {
 }
 
 .gradient-bg-indigo {
-  background: linear-gradient(135deg, rgba(99,102,241,0.2) 0%, rgba(59,130,246,0.2) 100%);
+  background: linear-gradient(135deg, rgba(250,204,21,0.2) 0%, rgba(202,138,4,0.2) 100%);
 }
 
 /* Glass & Cards */
