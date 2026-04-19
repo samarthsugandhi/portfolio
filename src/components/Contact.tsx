@@ -222,22 +222,23 @@ export default function Contact() {
                 />
               </div>
 
-              <div className="flex flex-col gap-1.5">
+              <div className="relative flex flex-col pt-3">
                 <label
                   htmlFor="contact-message"
-                  className="text-xs font-semibold text-slate-400 uppercase tracking-wider"
+                  className={`absolute left-4 transition-all duration-300 pointer-events-none uppercase tracking-wider font-semibold ${
+                    form.message.length > 0 ? "-top-1 text-[10px] text-indigo-400" : "top-6 text-sm text-slate-500"
+                  }`}
                 >
-                  Message
+                  Message *
                 </label>
                 <textarea
                   id="contact-message"
                   name="message"
                   rows={4}
-                  placeholder="What would you like to discuss?"
                   value={form.message}
                   onChange={handleChange}
                   required
-                  className="w-full px-4 py-3 rounded-xl bg-slate-800/60 border border-slate-700/60 text-white placeholder-slate-500 text-sm focus:outline-none focus:border-indigo-500/60 focus:ring-1 focus:ring-indigo-500/30 transition-all duration-200 resize-none"
+                  className="w-full px-4 pt-5 pb-2 rounded-xl bg-slate-800/40 border border-slate-700/60 text-white text-sm focus:outline-none focus:border-indigo-500/60 focus:bg-slate-800/80 transition-all duration-300 shadow-inner shadow-black/20 resize-none"
                 />
               </div>
 
@@ -279,18 +280,27 @@ function FormField({
 }: {
   label: string; id: string; name: string; type: string;
   placeholder: string; value: string;
-  onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  onChange: (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => void;
   required?: boolean;
 }) {
+  const [isFocused, setIsFocused] = useState(false);
+  const active = isFocused || value.length > 0;
+
   return (
-    <div className="flex flex-col gap-1.5">
-      <label htmlFor={id} className="text-xs font-semibold text-slate-400 uppercase tracking-wider">
-        {label}
+    <div className="relative flex flex-col pt-3">
+      <label 
+        htmlFor={id} 
+        className={`absolute left-4 transition-all duration-300 pointer-events-none uppercase tracking-wider font-semibold ${active ? "-top-1 text-[10px] text-indigo-400" : "top-6 text-sm text-slate-500"}`}
+      >
+        {label} {required && "*"}
       </label>
       <input
-        id={id} name={name} type={type} placeholder={placeholder}
+        id={id} name={name} type={type} 
+        placeholder={isFocused ? placeholder : ""}
         value={value} onChange={onChange} required={required}
-        className="w-full px-4 py-3 rounded-xl bg-slate-800/60 border border-slate-700/60 text-white placeholder-slate-500 text-sm focus:outline-none focus:border-indigo-500/60 focus:ring-1 focus:ring-indigo-500/30 transition-all duration-200"
+        onFocus={() => setIsFocused(true)}
+        onBlur={() => setIsFocused(false)}
+        className="w-full px-4 pt-5 pb-2 rounded-xl bg-slate-800/40 border border-slate-700/60 text-white text-sm focus:outline-none focus:border-indigo-500/60 focus:bg-slate-800/80 transition-all duration-300 shadow-inner shadow-black/20"
       />
     </div>
   );
