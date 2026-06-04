@@ -1,0 +1,1441 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>SamarthOS</title>
+<link href="https://fonts.googleapis.com/css2?family=Georgia&family=Courier+New&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --win-bg: #c0c0c0;
+    --win-dark: #808080;
+    --win-darker: #404040;
+    --win-light: #ffffff;
+    --win-border-light: #dfdfdf;
+    --win-blue: #000080;
+    --win-blue-grad: linear-gradient(to right, #000080, #1084d0);
+    --win-title-text: #ffffff;
+    --desktop-bg: #008080;
+    --font: 'Arial', sans-serif;
+    --fs-base: 15px;
+    --fs-sm: 13px;
+    --fs-xs: 12px;
+  }
+
+  html, body {
+    width: 100%; height: 100%;
+    overflow: hidden;
+    background: var(--desktop-bg);
+    font-family: var(--font);
+    font-size: var(--fs-base);
+    color: #000;
+    user-select: none;
+    cursor: default;
+  }
+
+  #desktop {
+    position: absolute;
+    inset: 0;
+    bottom: 28px;
+    overflow: hidden;
+    background-image: url('/images/wallpaper.png');
+    background-size: cover;
+    background-position: center;
+  }
+
+  /* ─── DESKTOP ICONS ─── */
+  .desktop-icons {
+    position: absolute;
+    top: 10px; left: 10px;
+    display: flex;
+    flex-direction: column;
+    flex-wrap: wrap;
+    align-content: flex-start;
+    height: calc(100% - 40px);
+    gap: 8px 20px;
+    z-index: 5;
+  }
+  .d-icon {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 80px;
+    padding: 6px 4px;
+    cursor: pointer;
+    border: 1px solid transparent;
+  }
+  .d-icon:hover, .d-icon.selected {
+    background: rgba(0,0,128,0.4);
+    border: 1px dotted #fff;
+  }
+  .d-icon .di { font-size: 42px; }
+  .d-icon span {
+    color: #fff;
+    font-size: 12px;
+    text-align: center;
+    margin-top: 4px;
+    text-shadow: 1px 1px 1px #000;
+    line-height: 1.2;
+  }
+
+  /* ─── WIN95 BORDERS ─── */
+  .raised {
+    border-top: 2px solid var(--win-light);
+    border-left: 2px solid var(--win-light);
+    border-right: 2px solid var(--win-darker);
+    border-bottom: 2px solid var(--win-darker);
+  }
+
+  /* ─── WINDOWS ─── */
+  .win {
+    position: absolute;
+    background: var(--win-bg);
+    display: none;
+    flex-direction: column;
+    border-top: 2px solid var(--win-light);
+    border-left: 2px solid var(--win-light);
+    border-right: 2px solid var(--win-darker);
+    border-bottom: 2px solid var(--win-darker);
+    z-index: 10;
+    min-width: 280px;
+    min-height: 150px;
+  }
+  .win.visible { display: flex; }
+  .win.focused { z-index: 20; }
+
+  .win-titlebar {
+    background: var(--win-blue-grad);
+    color: var(--win-title-text);
+    font-weight: bold;
+    font-size: 15px;
+    padding: 6px 8px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    cursor: move;
+    flex-shrink: 0;
+  }
+  .win-titlebar .wt-icon { font-size: 12px; }
+  .win-titlebar .wt-title { flex: 1; }
+  .win-btn {
+    width: 20px; height: 18px;
+    background: var(--win-bg);
+    border-top: 1px solid var(--win-light);
+    border-left: 1px solid var(--win-light);
+    border-right: 1px solid var(--win-darker);
+    border-bottom: 1px solid var(--win-darker);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 11px; cursor: pointer; color: #000; font-weight: bold;
+  }
+  .win-btn:active {
+    border-top: 1px solid var(--win-darker);
+    border-left: 1px solid var(--win-darker);
+    border-right: 1px solid var(--win-light);
+    border-bottom: 1px solid var(--win-light);
+  }
+
+  .win-menubar {
+    display: flex; padding: 2px 4px; gap: 2px; flex-shrink: 0;
+    border-bottom: 1px solid var(--win-dark);
+  }
+  .menu-item { padding: 4px 12px; cursor: pointer; font-size: 14px; font-weight: bold; color: #000; }
+  .menu-item:hover { background: var(--win-blue); color: #fff; }
+
+  .win-content { flex: 1; overflow-y: auto; overflow-x: hidden; }
+  .win-content::-webkit-scrollbar { width: 16px; }
+  .win-content::-webkit-scrollbar-track { background: var(--win-bg); }
+  .win-content::-webkit-scrollbar-thumb {
+    background: var(--win-bg);
+    border-top: 1px solid var(--win-light);
+    border-left: 1px solid var(--win-light);
+    border-right: 1px solid var(--win-darker);
+    border-bottom: 1px solid var(--win-darker);
+  }
+
+  .win-statusbar {
+    display: flex; padding: 4px 8px; gap: 4px; flex-shrink: 0;
+    border-top: 1px solid var(--win-dark); font-size: 13px; font-weight: bold; color: #000;
+  }
+  .status-section {
+    flex: 1; padding: 2px 6px;
+    border-top: 1px solid var(--win-dark);
+    border-left: 1px solid var(--win-dark);
+    border-right: 1px solid var(--win-border-light);
+    border-bottom: 1px solid var(--win-border-light);
+  }
+
+  /* ════════════════════════════════════════════
+     SHOWCASE WINDOW — the big initial opener
+     ════════════════════════════════════════════ */
+  /* ── All windows share the same large base size ── */
+  .win {
+    width: calc(100% - 96px) !important;
+    height: calc(100% - 36px) !important;
+  }
+
+  #win-showcase    { top: 14px; left: 80px; }
+  #win-about       { top: 22px; left: 84px; }
+  #win-skills      { top: 30px; left: 88px; }
+  #win-projects    { top: 38px; left: 92px; }
+  #win-achievements{ top: 46px; left: 96px; }
+  #win-education   { top: 54px; left: 100px; }
+  #win-certs       { top: 62px; left: 104px; }
+  #win-contact     { top: 70px; left: 108px; }
+
+  .showcase-body {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    background: #fff;
+    padding: 0;
+  }
+
+  /* top area: photo + name block */
+  .showcase-top {
+    display: flex;
+    flex: 1;
+    overflow: hidden;
+  }
+
+  /* left: photo column */
+  .showcase-photo-col {
+    width: 200px;
+    flex-shrink: 0;
+    background: #f0f0f0;
+    border-right: 1px solid #ccc;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 20px 16px;
+    gap: 12px;
+  }
+  .photo-frame {
+    width: 140px; height: 160px;
+    border-top: 3px solid var(--win-darker);
+    border-left: 3px solid var(--win-darker);
+    border-right: 3px solid var(--win-light);
+    border-bottom: 3px solid var(--win-light);
+    background: #ddd;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    font-size: 52px;
+    color: #aaa;
+    overflow: hidden;
+  }
+  .photo-frame img {
+    width: 100%; height: 100%;
+    object-fit: cover;
+  }
+  .photo-caption {
+    font-size: 10px;
+    color: #555;
+    text-align: center;
+    font-style: italic;
+  }
+
+  /* info column */
+  .showcase-info-col {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 28px 36px;
+    gap: 0;
+  }
+
+  .showcase-name {
+    font-family: 'Georgia', serif;
+    font-size: 44px;
+    font-weight: bold;
+    color: #000;
+    letter-spacing: -1px;
+    line-height: 1.1;
+    margin-bottom: 8px;
+  }
+
+  .showcase-role {
+    font-family: 'Georgia', serif;
+    font-size: 18px;
+    color: #333;
+    margin-bottom: 22px;
+    font-style: italic;
+  }
+
+  /* nav links row */
+  .showcase-nav {
+    display: flex;
+    gap: 0;
+    margin-bottom: 24px;
+    border-bottom: 1px solid #ccc;
+    padding-bottom: 16px;
+  }
+  .showcase-nav a {
+    font-size: 15px;
+    font-weight: bold;
+    color: var(--win-blue);
+    text-decoration: underline;
+    cursor: pointer;
+    margin-right: 28px;
+    letter-spacing: 0.5px;
+  }
+  .showcase-nav a:hover { color: #cc0000; }
+
+  /* summary text */
+  .showcase-summary {
+    font-size: 15px;
+    color: #000;
+    font-weight: bold;
+    line-height: 1.8;
+    max-width: 600px;
+    margin-bottom: 22px;
+  }
+
+  /* stats row */
+  .showcase-stats {
+    display: flex;
+    gap: 20px;
+    margin-bottom: 20px;
+  }
+  .stat-box {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 6px 10px;
+    border-top: 2px solid var(--win-darker);
+    border-left: 2px solid var(--win-darker);
+    border-right: 2px solid var(--win-light);
+    border-bottom: 2px solid var(--win-light);
+    background: var(--win-bg);
+    min-width: 70px;
+  }
+  .stat-num {
+    font-size: 26px;
+    font-weight: bold;
+    font-family: 'Georgia', serif;
+    color: var(--win-blue);
+  }
+  .stat-label { font-size: 13px; font-weight: bold; color: #000; text-align: center; }
+
+  /* CTA badge — "OPEN TO WORK" replaces FOR HIRE */
+  .hire-badge {
+    display: inline-flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background: #cc0000;
+    color: #fff;
+    font-weight: bold;
+    padding: 14px 28px;
+    font-size: 16px;
+    letter-spacing: 2px;
+    cursor: pointer;
+    border-top: 2px solid #ff6666;
+    border-left: 2px solid #ff6666;
+    border-right: 2px solid #880000;
+    border-bottom: 2px solid #880000;
+    font-family: 'Georgia', serif;
+  }
+  .hire-badge:hover { background: #aa0000; }
+  .hire-badge small {
+    font-size: 11px;
+    font-weight: normal;
+    font-family: var(--font);
+    letter-spacing: 0;
+    margin-top: 3px;
+    opacity: 0.9;
+  }
+
+  /* bottom quick contact bar */
+  .showcase-bottom {
+    border-top: 2px solid var(--win-dark);
+    background: #f5f5f5;
+    padding: 10px 28px;
+    display: flex;
+    align-items: center;
+    gap: 28px;
+    flex-shrink: 0;
+    font-size: 12px;
+  }
+  .showcase-bottom .sc-label { color: #555; font-weight: bold; margin-right: -16px; }
+  .showcase-bottom a {
+    color: var(--win-blue);
+    text-decoration: underline;
+    cursor: pointer;
+  }
+  .showcase-bottom a:hover { color: #cc0000; }
+
+  /* ─── OTHER WINDOWS (same as before) ─── */
+  .about-body { padding: 24px; display: flex; gap: 24px; }
+  .about-photo {
+    width: 140px; height: 160px; flex-shrink: 0;
+    background: linear-gradient(135deg, #ddd, #f5f5f5);
+    border-top: 2px solid var(--win-darker);
+    border-left: 2px solid var(--win-darker);
+    border-right: 2px solid var(--win-light);
+    border-bottom: 2px solid var(--win-light);
+    display: flex; align-items: center; justify-content: center;
+    flex-direction: column; font-size: 64px; color: #aaa; gap: 2px;
+    box-shadow: inset 0 0 10px rgba(0,0,0,0.1);
+  }
+  .about-text h2 { font-size: 24px; font-weight: bold; margin-bottom: 12px; color: var(--win-blue); }
+  .about-text p { font-size: 16px; line-height: 1.8; margin-bottom: 16px; color: #000; font-weight: bold; border-left: 4px solid var(--win-blue); padding-left: 12px; background: rgba(0,0,128,0.03); }
+  .about-props { margin-top: 16px; border: 2px solid var(--win-dark); box-shadow: 2px 2px 0px rgba(0,0,0,0.1); }
+  .prop-row { display: flex; font-size: 15px; border-bottom: 1px solid #ddd; }
+  .prop-row:nth-child(even) { background: #f9f9f9; }
+  .prop-row:last-child { border-bottom: none; }
+  .prop-key { background: var(--win-bg); padding: 8px 14px; min-width: 130px; font-weight: bold; border-right: 1px solid #ccc; color: #000; }
+  .prop-val { padding: 8px 14px; font-weight: bold; color: var(--win-blue); }
+
+  .skills-grid { padding: 20px; display: flex; flex-wrap: wrap; gap: 18px; align-content: flex-start; }
+  .skill-group {
+    background: linear-gradient(to bottom, #fff, var(--win-bg)); padding: 16px; min-width: 200px; flex: 1;
+    border-top: 2px solid var(--win-light); border-left: 2px solid var(--win-light);
+    border-right: 2px solid var(--win-darker); border-bottom: 2px solid var(--win-darker);
+    transition: transform 0.1s; cursor: default;
+  }
+  .skill-group:hover { transform: translateY(-2px); border-color: var(--win-blue); }
+  .skill-group-title { font-weight: bold; font-size: 17px; margin-bottom: 12px; color: var(--win-blue); border-bottom: 2px solid var(--win-blue); padding-bottom: 6px; }
+  .skill-item { display: flex; align-items: center; gap: 8px; font-size: 15px; padding: 6px 0; font-weight: bold; color: #222; }
+  .skill-item::before { content: '✨'; font-size: 12px; }
+
+  .ach-list { padding: 12px 16px; display: flex; flex-direction: column; gap: 10px; }
+  .ach-item {
+    display: flex; align-items: flex-start; gap: 16px; padding: 16px;
+    border-top: 2px solid var(--win-light); border-left: 2px solid var(--win-light);
+    border-right: 2px solid var(--win-darker); border-bottom: 2px solid var(--win-darker);
+    background: linear-gradient(135deg, #fff, #f0f0f0);
+    transition: all 0.2s; cursor: default;
+  }
+  .ach-item:hover { background: linear-gradient(135deg, var(--win-blue), #000044); transform: scale(1.02); }
+  .ach-item:hover .ach-title { color: #fff; text-shadow: 1px 1px 2px #000; }
+  .ach-item:hover .ach-sub { color: #ccc; }
+  .ach-icon { font-size: 36px; flex-shrink: 0; filter: drop-shadow(2px 2px 2px rgba(0,0,0,0.2)); }
+  .ach-title { font-weight: bold; font-size: 17px; color: #000; margin-bottom: 6px; }
+  .ach-sub { font-size: 15px; font-weight: bold; color: #444; line-height: 1.6; }
+
+  .edu-list { padding: 16px; display: flex; flex-direction: column; gap: 12px; border-left: 4px solid var(--win-blue); margin-left: 16px; }
+  .edu-item {
+    background: linear-gradient(to right, #fff, var(--win-bg)); padding: 16px; position: relative;
+    border-top: 2px solid var(--win-light); border-left: 2px solid var(--win-light);
+    border-right: 2px solid var(--win-darker); border-bottom: 2px solid var(--win-darker);
+  }
+  .edu-item::before {
+    content: ''; position: absolute; left: -26px; top: 20px;
+    width: 14px; height: 14px; background: var(--win-blue); border-radius: 50%;
+    border: 3px solid #fff; box-shadow: 0 0 0 2px var(--win-blue);
+  }
+  .edu-degree { font-weight: bold; font-size: 18px; color: var(--win-blue); margin-bottom: 8px; }
+  .edu-school { font-size: 16px; font-weight: bold; color: #111; margin-bottom: 12px; }
+  .edu-meta { font-size: 14px; display: flex; gap: 12px; }
+  .edu-badge { background: #333; color: #fff; font-size: 14px; padding: 4px 12px; font-weight: bold; border-radius: 2px; }
+
+  /* Explorer for projects */
+  .explorer-addr {
+    display: flex; align-items: center; padding: 6px 12px; gap: 10px;
+    background: var(--win-bg); border-bottom: 1px solid var(--win-dark);
+    font-size: 14px; flex-shrink: 0; font-weight: bold;
+  }
+  .addr-box {
+    flex: 1; background: #fff;
+    border-top: 2px solid var(--win-darker); border-left: 2px solid var(--win-darker);
+    border-right: 2px solid var(--win-light); border-bottom: 2px solid var(--win-light);
+    padding: 4px 8px; font-size: 14px; color: #000;
+  }
+  .explorer-pane { display: flex; flex: 1; overflow: hidden; }
+  .explorer-left {
+    width: 240px; flex-shrink: 0; background: var(--win-bg);
+    border-right: 1px solid var(--win-dark); overflow-y: auto; padding: 8px;
+  }
+  .tree-item {
+    padding: 10px 14px; font-size: 16px; display: flex; align-items: center; gap: 10px; cursor: pointer; font-weight: bold; margin-bottom: 4px;
+  }
+  .tree-item:hover, .tree-item.active { background: var(--win-blue); color: #fff; }
+  .explorer-right {
+    flex: 1; background: #fff; overflow-y: auto; padding: 40px;
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 40px; align-content: flex-start;
+  }
+  .proj-icon {
+    display: flex; flex-direction: column; align-items: center;
+    cursor: pointer; padding: 20px;
+    border: 2px solid transparent; transition: background 0.2s, transform 0.2s;
+  }
+  .proj-icon:hover, .proj-icon.selected {
+    background: rgba(0,0,128,0.05); border: 2px dotted var(--win-blue); transform: translateY(-4px);
+  }
+  .proj-icon img { width: 300px; height: 215px; object-fit: cover; border: 3px solid var(--win-darker); box-shadow: 4px 4px 0px rgba(0,0,0,0.15); }
+  .proj-img-ph {
+    width: 300px; height: 215px; background: var(--win-bg);
+    border: 3px solid var(--win-darker); display: flex; align-items: center;
+    justify-content: center; font-size: 72px; box-shadow: 4px 4px 0px rgba(0,0,0,0.15);
+  }
+  .proj-icon span { font-size: 18px; font-weight: bold; text-align: center; margin-top: 14px; line-height: 1.4; color: #111; }
+  /* ── Project Detail Pane (OS Style) ── */
+  #proj-detail {
+    display: none;
+    position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+    background: #fff; z-index: 10;
+    flex-direction: column;
+  }
+  #proj-detail.visible { display: flex; }
+  .pd-header {
+    background: var(--win-bg); padding: 6px 12px;
+    border-bottom: 2px solid var(--win-dark);
+    display: flex; justify-content: space-between; align-items: center;
+  }
+  .pd-back { cursor: pointer; font-weight: bold; font-size: 13px; color: var(--win-blue); text-decoration: underline; }
+  .pd-content { padding: 20px; overflow-y: auto; flex: 1; }
+  .pd-title { font-size: 20px; font-weight: bold; color: var(--win-blue); margin-bottom: 12px; }
+  .pd-meta { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 16px; }
+  .pd-badge { background: var(--win-blue); color: #fff; font-size: 13px; padding: 4px 10px; font-weight: bold; }
+  .pd-image { margin-bottom: 20px; text-align: center; border: 2px solid var(--win-darker); padding: 10px; background: #eee; }
+  .pd-image img { max-width: 100%; max-height: 400px; object-fit: contain; }
+  .pd-desc { font-size: 15px; line-height: 1.8; color: #000; font-weight: bold; }
+  .pd-desc ul { padding-left: 20px; margin-bottom: 16px; }
+  .pd-links { margin-top: 20px; display: flex; gap: 16px; }
+  .pd-links a { font-size: 14px; font-weight: bold; color: var(--win-blue); text-decoration: underline; cursor: pointer; }
+
+  .cert-list { padding: 6px 10px; }
+  .cert-item { display: flex; align-items: center; gap: 12px; padding: 12px 10px; border-bottom: 1px solid #ccc; font-size: 14px; font-weight: bold; color: #000; }
+  .cert-name { flex: 1; font-weight: bold; font-size: 15px; color: #000; }
+  .cert-sub { color: #222; font-size: 13px; font-weight: bold; }
+  .cert-date { color: #333; font-size: 13px; font-weight: bold; white-space: nowrap; }
+
+  .contact-body { padding: 20px; display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .contact-card {
+    display: flex; align-items: center; gap: 16px; padding: 16px 20px;
+    background: linear-gradient(135deg, var(--win-bg), #eaeaea); cursor: pointer;
+    border-top: 2px solid var(--win-light); border-left: 2px solid var(--win-light);
+    border-right: 2px solid var(--win-darker); border-bottom: 2px solid var(--win-darker);
+    transition: transform 0.1s, box-shadow 0.1s;
+  }
+  .contact-card:hover { transform: translateY(-3px); box-shadow: 4px 4px 0px rgba(0,0,0,0.2); background: linear-gradient(135deg, var(--win-blue), #000044); color: #fff; }
+  .contact-card:hover .cc-label { color: #aaa; }
+  .contact-card:hover .cc-val { color: #fff; }
+  .cc-icon { font-size: 36px; filter: drop-shadow(2px 2px 2px rgba(0,0,0,0.2)); }
+  .cc-label { font-size: 13px; font-weight: bold; color: #555; margin-bottom: 4px; transition: color 0.1s; }
+  .cc-val { font-size: 16px; font-weight: bold; color: var(--win-blue); word-break: break-all; transition: color 0.1s; }
+
+  /* ─── TASKBAR ─── */
+  #taskbar {
+    position: absolute; bottom: 0; left: 0; right: 0; height: 28px;
+    background: var(--win-bg); border-top: 2px solid var(--win-light);
+    display: flex; align-items: center; padding: 2px; gap: 2px; z-index: 100;
+  }
+  #start-btn {
+    display: flex; align-items: center; gap: 4px;
+    background: var(--win-bg);
+    border-top: 2px solid var(--win-light); border-left: 2px solid var(--win-light);
+    border-right: 2px solid var(--win-darker); border-bottom: 2px solid var(--win-darker);
+    padding: 2px 8px; font-weight: bold; font-size: 12px; cursor: pointer; height: 22px;
+  }
+  #start-btn:active {
+    border-top: 2px solid var(--win-darker); border-left: 2px solid var(--win-darker);
+    border-right: 2px solid var(--win-light); border-bottom: 2px solid var(--win-light);
+  }
+  .tb-sep { width: 2px; height: 20px; background: var(--win-dark); margin: 0 2px; border-right: 1px solid var(--win-light); }
+  .tb-window-btn {
+    height: 20px; min-width: 90px; max-width: 130px;
+    background: var(--win-bg); font-size: 10px; padding: 0 5px; cursor: pointer;
+    display: flex; align-items: center; gap: 3px;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    border-top: 1px solid var(--win-light); border-left: 1px solid var(--win-light);
+    border-right: 1px solid var(--win-darker); border-bottom: 1px solid var(--win-darker);
+  }
+  .tb-window-btn.active {
+    border-top: 1px solid var(--win-darker); border-left: 1px solid var(--win-darker);
+    border-right: 1px solid var(--win-light); border-bottom: 1px solid var(--win-light);
+    background: #b0b0b0;
+  }
+  .tb-clock-area {
+    margin-left: auto; padding: 2px 8px; font-size: 10px; height: 20px;
+    display: flex; align-items: center; gap: 5px; white-space: nowrap;
+    border-top: 1px solid var(--win-darker); border-left: 1px solid var(--win-darker);
+    border-right: 1px solid var(--win-light); border-bottom: 1px solid var(--win-light);
+  }
+
+  /* ─── CREDITS & DOOM ─── */
+  .credits-container {
+    width: 100%; height: 100%; background: #000; color: #fff;
+    overflow: hidden; position: relative; font-family: 'Courier New', monospace;
+    display: flex; justify-content: center; align-items: center;
+  }
+  .credits-scroll {
+    position: absolute; width: 80%; text-align: center;
+    bottom: -100%; animation: scrollUp 20s linear infinite;
+  }
+  @keyframes scrollUp {
+    0% { bottom: -100%; }
+    100% { bottom: 100%; }
+  }
+  .credits-title { font-size: 24px; font-weight: bold; margin-bottom: 20px; color: #ffeb3b; }
+  .credits-section { margin-bottom: 30px; }
+  .credits-role { font-size: 14px; color: #aaa; margin-bottom: 5px; text-transform: uppercase; letter-spacing: 2px;}
+  .credits-name { font-size: 18px; font-weight: bold; margin-bottom: 15px; }
+  
+  .vortex-3d {
+    font-size: 32px; font-weight: bold; margin: 40px 0;
+    text-transform: uppercase;
+    transform: perspective(500px) rotateX(20deg) rotateY(-10deg);
+    color: #00ffff; text-shadow: 2px 2px 0px #ff00ff, 4px 4px 0px #0000ff;
+    animation: spin3d 4s infinite linear;
+    display: inline-block;
+  }
+  @keyframes spin3d {
+    0% { transform: perspective(500px) rotateX(20deg) rotateY(0deg); }
+    100% { transform: perspective(500px) rotateX(20deg) rotateY(360deg); }
+  }
+
+  /* ─── START MENU ─── */
+  #start-menu {
+    display: none; position: absolute; bottom: 28px; left: 0;
+    width: 180px; background: var(--win-bg); z-index: 200; flex-direction: row;
+    border-top: 2px solid var(--win-light); border-left: 2px solid var(--win-light);
+    border-right: 2px solid var(--win-darker); border-bottom: 2px solid var(--win-darker);
+  }
+  #start-menu.visible { display: flex; }
+  .start-sidebar {
+    width: 24px; background: var(--win-blue); display: flex; align-items: flex-end;
+    justify-content: center; padding-bottom: 6px;
+    writing-mode: vertical-rl; text-orientation: mixed;
+    transform: rotate(180deg); color: #fff; font-weight: bold; font-size: 11px; letter-spacing: 2px;
+  }
+  .start-items { flex: 1; }
+  .start-item { display: flex; align-items: center; gap: 7px; padding: 4px 8px; font-size: 11px; cursor: pointer; }
+  .start-item:hover { background: var(--win-blue); color: #fff; }
+  .start-item .si-icon { font-size: 15px; width: 18px; text-align: center; }
+  .start-sep { height: 1px; background: var(--win-dark); margin: 2px 4px; border-bottom: 1px solid var(--win-light); }
+</style>
+</head>
+<body>
+
+<!-- DESKTOP -->
+<div id="desktop">
+
+  <!-- Desktop Icons -->
+  <div class="desktop-icons">
+    <div class="d-icon" ondblclick="openWin('showcase')">
+      <div class="di">🖥️</div><span>Portfolio</span>
+    </div>
+    <div class="d-icon" ondblclick="openWin('inbox')">
+      <div class="di">📥</div><span>Inbox</span>
+    </div>
+    <div class="d-icon" ondblclick="openWin('about')">
+      <div class="di">👤</div><span>About</span>
+    </div>
+    <div class="d-icon" ondblclick="openWin('skills')">
+      <div class="di">⚙️</div><span>Skills</span>
+    </div>
+    <div class="d-icon" ondblclick="openWin('projects')">
+      <div class="di">💾</div><span>Projects</span>
+    </div>
+    <div class="d-icon" ondblclick="openWin('achievements')">
+      <div class="di">🏆</div><span>Awards</span>
+    </div>
+    <div class="d-icon" ondblclick="openWin('education')">
+      <div class="di">🎓</div><span>Education</span>
+    </div>
+    <div class="d-icon" ondblclick="openWin('certs')">
+      <div class="di">📜</div><span>Certs</span>
+    </div>
+    <div class="d-icon" ondblclick="openWin('contact')">
+      <div class="di">📧</div><span>Contact</span>
+    </div>
+    <div class="d-icon" ondblclick="openWin('doom')">
+      <div class="di">👾</div><span>DOOM</span>
+    </div>
+    <div class="d-icon" ondblclick="openWin('credits')">
+      <div class="di">🎬</div><span>Credits</span>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════
+       SHOWCASE WINDOW — BIG INITIAL OPENER
+       ══════════════════════════════════════════ -->
+  <div class="win visible focused" id="win-showcase">
+    <div class="win-titlebar" id="tb-showcase">
+      <span class="wt-icon">🖥️</span>
+      <span class="wt-title">Samarth Sugandhi — Portfolio Showcase 2026</span>
+      <div class="win-btn" onclick="closeWin('showcase')">✕</div>
+    </div>
+    <div class="win-menubar">
+      <span class="menu-item">File</span>
+      <span class="menu-item">Edit</span>
+      <span class="menu-item">View</span>
+      <span class="menu-item">Help</span>
+    </div>
+    <div class="win-content" style="background:#fff;">
+      <div class="showcase-body">
+        <div class="showcase-top">
+
+          <!-- Photo column -->
+          <div class="showcase-photo-col">
+            <div class="photo-frame" id="profile-photo">
+              <img src="/images/samarth.png" alt="Samarth Sugandhi" onerror="this.outerHTML='🧑&zwj;💻'">
+            </div>
+            <div class="photo-caption">Samarth Sugandhi<br>Bagalkot, Karnataka</div>
+
+            <!-- Quick links below photo -->
+            <div style="display:flex;flex-direction:column;gap:4px;width:100%;margin-top:8px;">
+              <a style="font-size:9px;color:var(--win-blue);text-decoration:underline;cursor:pointer;display:block;" onclick="window.open('https://github.com/samarthsugandhi','_blank')">💻 github.com/samarthsugandhi</a>
+              <a style="font-size:9px;color:var(--win-blue);text-decoration:underline;cursor:pointer;display:block;" onclick="window.open('https://linkedin.com/in/samarth-sugandhi-0082a32bb','_blank')">🔗 LinkedIn Profile</a>
+              <a style="font-size:9px;color:var(--win-blue);text-decoration:underline;cursor:pointer;display:block;" onclick="window.open('https://samarth-sugandhi-portfolio.vercel.app','_blank')">🌐 Portfolio Site</a>
+            </div>
+          </div>
+
+          <!-- Info column -->
+          <div class="showcase-info-col">
+            <div class="showcase-name">Samarth Sugandhi</div>
+            <div class="showcase-role">MERN Stack Developer &amp; Open Source Contributor</div>
+
+            <!-- Nav links row — same as original ABOUT · EXPERIENCE · PROJECTS · CONTACT -->
+            <div class="showcase-nav">
+              <a onclick="openWin('about')">ABOUT</a>
+              <a onclick="openWin('skills')">SKILLS</a>
+              <a onclick="openWin('projects')">PROJECTS</a>
+              <a onclick="openWin('achievements')">ACHIEVEMENTS</a>
+              <a onclick="openWin('education')">EDUCATION</a>
+              <a onclick="openWin('contact')">CONTACT</a>
+            </div>
+
+            <!-- Summary -->
+            <div class="showcase-summary">
+              MERN Stack Developer with hands-on experience building real-world web applications
+              and institutional platforms using React.js, Next.js, Node.js, and MongoDB.
+              <br><br>
+              3× National Hackathon Winner. Shortlisted at Cognizant Technoverse Hackathon 2026 (AI/Agents Track).
+              Active open-source contributor in GSSoC 2026 &amp; SSoC.
+              B.E. Information Science &amp; Engineering at Basaveshwar Engineering College, Bagalkot.
+            </div>
+
+            <!-- Stats -->
+            <div class="showcase-stats">
+              <div class="stat-box">
+                <div class="stat-num">3×</div>
+                <div class="stat-label">National<br>Hackathon Wins</div>
+              </div>
+              <div class="stat-box">
+                <div class="stat-num">8.24</div>
+                <div class="stat-label">CGPA<br>/ 10.0</div>
+              </div>
+              <div class="stat-box">
+                <div class="stat-num">5+</div>
+                <div class="stat-label">Projects<br>Built</div>
+              </div>
+              <div class="stat-box">
+                <div class="stat-num">500+</div>
+                <div class="stat-label">Site<br>Visitors</div>
+              </div>
+            </div>
+
+            <!-- OPEN TO WORK badge — "FOR HIRE" equivalent -->
+            <div class="hire-badge" onclick="openWin('contact')">
+              OPEN TO WORK
+              <small>samarthsugandhi04@gmail.com</small>
+            </div>
+          </div>
+        </div>
+
+        <!-- Bottom quick contact bar -->
+        <div class="showcase-bottom">
+          <span class="sc-label">📧</span>
+          <a onclick="window.open('mailto:samarthsugandhi04@gmail.com')">samarthsugandhi04@gmail.com</a>
+          <span class="sc-label">📞</span>
+          <span>+91 73536 82322</span>
+          <span class="sc-label">🌐</span>
+          <a onclick="window.open('https://samarth-sugandhi-portfolio.vercel.app','_blank')">samarth-sugandhi-portfolio.vercel.app</a>
+          <a href="/resume.pdf" download="Samarth_Sugandhi_Resume.pdf"
+             style="margin-left:auto;background:#000080;color:#fff;font-weight:bold;padding:4px 14px;font-size:12px;text-decoration:none;border-top:1px solid #8888ff;border-left:1px solid #8888ff;border-right:1px solid #000033;border-bottom:1px solid #000033;">
+            📄 Download Resume
+          </a>
+        </div>
+      </div>
+    </div>
+    <div class="win-statusbar">
+      <div class="status-section">MERN Stack Developer · B.E. ISE, BEC Bagalkot</div>
+      <div class="status-section" style="max-width:140px;">Expected Grad: 2027</div>
+    </div>
+  </div>
+
+  <!-- ══ ABOUT WINDOW ══ -->
+  <div class="win" id="win-about">
+    <div class="win-titlebar" id="tb-about">
+      <span class="wt-icon">👤</span>
+      <span class="wt-title">About — Samarth Sugandhi</span>
+      <div class="win-btn" onclick="closeWin('about')">✕</div>
+    </div>
+    <div class="win-menubar">
+      <span class="menu-item">File</span><span class="menu-item">View</span>
+    </div>
+    <div class="win-content" style="background:var(--win-bg);">
+      <div class="about-body">
+        <div class="about-photo" style="width:130px;height:155px;overflow:hidden;padding:0;">
+          <img src="/images/samarth.png" alt="Samarth" style="width:100%;height:100%;object-fit:cover;" onerror="this.parentElement.innerHTML='🧑&zwj;💻'">
+        </div>
+        <div class="about-text">
+          <h2>Samarth Sugandhi</h2>
+          <p style="background:#f0f0f0;border-left:3px solid #000080;padding:8px 12px;margin-bottom:10px;font-size:13px;line-height:1.7;">
+            MERN Stack Developer with hands-on experience in building real-world web applications and institutional
+            platforms using React.js, Next.js, Node.js, and MongoDB. Shortlisted at Cognizant Technoverse Hackathon 2026,
+            3× national hackathon winner, and active open-source contributor (GSSoC, SSoC). Focused on clean UI/UX,
+            scalable system design, and impactful product development.
+          </p>
+          <div class="about-props">
+            <div class="prop-row"><div class="prop-key">College</div><div class="prop-val">Basaveshwar Engineering College, Bagalkot</div></div>
+            <div class="prop-row"><div class="prop-key">Degree</div><div class="prop-val">B.E. Information Science &amp; Engineering</div></div>
+            <div class="prop-row"><div class="prop-key">CGPA</div><div class="prop-val">8.24 / 10.0</div></div>
+            <div class="prop-row"><div class="prop-key">Grad Year</div><div class="prop-val">2027 (Expected)</div></div>
+            <div class="prop-row"><div class="prop-key">Languages</div><div class="prop-val">English · Hindi · Kannada</div></div>
+            <div class="prop-row"><div class="prop-key">Open Source</div><div class="prop-val">GSSoC 2026 · SSoC Contributor</div></div>
+          </div>
+          <div style="margin-top:14px;">
+            <a href="/resume.pdf" download="Samarth_Sugandhi_Resume.pdf"
+               style="display:inline-block;background:#000080;color:#fff;font-weight:bold;padding:6px 16px;font-size:12px;text-decoration:none;border-top:1px solid #8888ff;border-left:1px solid #8888ff;border-right:1px solid #000033;border-bottom:1px solid #000033;">📄 Download Resume</a>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="win-statusbar"><div class="status-section">MERN Stack Developer · BEC, Bagalkot</div></div>
+  </div>
+
+  <!-- ══ SKILLS WINDOW ══ -->
+  <div class="win" id="win-skills">
+    <div class="win-titlebar" id="tb-skills">
+      <span class="wt-icon">⚙️</span><span class="wt-title">Skills &amp; Technologies</span>
+      <div class="win-btn" onclick="closeWin('skills')">✕</div>
+    </div>
+    <div class="win-menubar"><span class="menu-item">File</span><span class="menu-item">View</span></div>
+    <div class="win-content" style="background:var(--win-bg);">
+      <div class="skills-grid">
+        <div class="skill-group"><div class="skill-group-title">💬 Languages</div>
+          <div class="skill-item">Python</div><div class="skill-item">JavaScript</div>
+          <div class="skill-item">Java</div><div class="skill-item">TypeScript (Basic)</div></div>
+        <div class="skill-group"><div class="skill-group-title">🖥️ Frontend</div>
+          <div class="skill-item">React.js</div><div class="skill-item">Next.js</div>
+          <div class="skill-item">HTML5 / CSS3</div><div class="skill-item">Tailwind CSS</div></div>
+        <div class="skill-group"><div class="skill-group-title">⚙️ Backend</div>
+          <div class="skill-item">Node.js</div><div class="skill-item">Express.js</div></div>
+        <div class="skill-group"><div class="skill-group-title">🗄️ Databases</div>
+          <div class="skill-item">MongoDB</div><div class="skill-item">MySQL</div>
+          <div class="skill-item">Firebase</div><div class="skill-item">PostgreSQL</div></div>
+        <div class="skill-group"><div class="skill-group-title">🔧 Tools</div>
+          <div class="skill-item">Git / GitHub</div><div class="skill-item">Vercel</div>
+          <div class="skill-item">Render</div></div>
+        <div class="skill-group"><div class="skill-group-title">🧠 Concepts</div>
+          <div class="skill-item">DSA (Python)</div><div class="skill-item">Authentication</div>
+          <div class="skill-item">RBAC</div><div class="skill-item">Responsive UI/UX</div>
+          <div class="skill-item">System Design</div></div>
+      </div>
+    </div>
+    <div class="win-statusbar"><div class="status-section">6 skill categories</div></div>
+  </div>
+
+  <!-- ══ DOOM WINDOW ══ -->
+  <div class="win" id="win-doom" style="top:20px; left:200px; width:640px; height:480px; min-width:320px; min-height:240px;">
+    <div class="win-titlebar" id="tb-doom">
+      <span class="wt-icon">👾</span><span class="wt-title">DOOM Shareware</span>
+      <div class="win-btn" onclick="closeWin('doom')">✕</div>
+    </div>
+    <div class="win-menubar"><span class="menu-item">File</span><span class="menu-item">View</span></div>
+    <div class="win-content" style="background:#000; overflow:hidden;">
+      <iframe src="https://silentspacemarine.com/" style="width:100%; height:100%; border:0;"></iframe>
+    </div>
+  </div>
+
+  <!-- ══ CREDITS WINDOW ══ -->
+  <div class="win" id="win-credits" style="top:50px; left:250px; width:500px; height:400px;">
+    <div class="win-titlebar" id="tb-credits">
+      <span class="wt-icon">🎬</span><span class="wt-title">Credits</span>
+      <div class="win-btn" onclick="closeWin('credits')">✕</div>
+    </div>
+    <div class="win-content" style="background:#000; overflow:hidden;">
+      <div class="credits-container">
+        <!-- Audio player for credits -->
+        <audio id="credits-audio" loop src="https://os.henryheffernan.com/assets/credits.mp3"></audio>
+        
+        <div class="credits-scroll">
+          <div class="credits-title">PROJECT CREDITS</div>
+          
+          <div class="credits-section">
+            <div class="credits-role">Created By</div>
+            <div class="credits-name">Samarth Sugandhi</div>
+          </div>
+          
+          <div class="credits-section">
+            <div class="credits-role">Project Companion & Inspiration</div>
+            <div class="credits-name">Sangam Gaddi</div>
+          </div>
+
+          <div class="credits-section">
+            <div class="vortex-3d">BEC VORTEX</div>
+          </div>
+
+          <div class="credits-section">
+            <div class="credits-role">Location</div>
+            <div class="credits-name">India, Karnataka, Bagalkot</div>
+          </div>
+          
+          <div class="credits-section" style="margin-top: 60px;">
+            <div class="credits-role">Thank you for visiting!</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ PROJECTS WINDOW (Explorer) ══ -->
+  <div class="win" id="win-projects">
+    <div class="win-titlebar" id="tb-projects">
+      <span class="wt-icon">💾</span><span class="wt-title">Projects — Portfolio Explorer</span>
+      <div class="win-btn" onclick="closeWin('projects')">✕</div>
+    </div>
+    <div class="win-content" style="background:var(--win-bg); position: relative;">
+      
+      <!-- Explorer View -->
+      <div class="explorer-addr">
+        <span>Address</span>
+        <div class="addr-box">C:\Portfolio\Projects</div>
+      </div>
+      <div class="explorer-pane">
+        <div class="explorer-left">
+          <div class="tree-item active" onclick="filterProj('all', this)">📁 All Projects</div>
+          <div class="tree-item" onclick="filterProj('Team Project', this)">👥 Team Projects</div>
+          <div class="tree-item" onclick="filterProj('Solo Project', this)">👤 Solo Projects</div>
+        </div>
+        <div class="explorer-right">
+          <div class="proj-icon" id="pi-vortex" data-cat="Team Project" ondblclick="showProjDetail('vortex')" onclick="selectProj(this)">
+            <img src="/images/becvortex.png" onerror="this.outerHTML='<div class=\'proj-img-ph\'>🏛️</div>'">
+            <span>BEC Vortex</span>
+          </div>
+          <div class="proj-icon" id="pi-mantis" data-cat="Team Project" ondblclick="showProjDetail('mantis')" onclick="selectProj(this)">
+            <img src="/images/mantis-os.png" onerror="this.outerHTML='<div class=\'proj-img-ph\'>🤖</div>'">
+            <span>MANTIS-OS</span>
+          </div>
+          <div class="proj-icon" id="pi-finova" data-cat="Team Project" ondblclick="showProjDetail('finova')" onclick="selectProj(this)">
+            <img src="/images/finnova.png" onerror="this.outerHTML='<div class=\'proj-img-ph\'>💰</div>'">
+            <span>Finova</span>
+          </div>
+          <div class="proj-icon" id="pi-billdesk" data-cat="Team Project" ondblclick="showProjDetail('billdesk')" onclick="selectProj(this)">
+            <img src="/images/becbilldesk.png" onerror="this.outerHTML='<div class=\'proj-img-ph\'>🧾</div>'">
+            <span>BEC BillDesk</span>
+          </div>
+          <div class="proj-icon" id="pi-techno" data-cat="Solo Project" ondblclick="showProjDetail('technophilia')" onclick="selectProj(this)">
+            <img src="/images/technophilia.png" onerror="this.outerHTML='<div class=\'proj-img-ph\'>🌐</div>'">
+            <span>Technophilia</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Detail View Overlay -->
+      <div id="proj-detail">
+        <div class="pd-header">
+          <span class="pd-back" onclick="hideProjDetail()">← Back to Explorer</span>
+          <span style="font-weight:bold;font-size:13px;color:#555;">Project.exe</span>
+        </div>
+        <div class="pd-content">
+          <div class="pd-title" id="pd-title">Title</div>
+          <div class="pd-meta" id="pd-meta"></div>
+          <div class="pd-image" id="pd-image-container">
+            <img id="pd-image" src="" alt="Project Image" />
+          </div>
+          <div class="pd-desc" id="pd-desc"></div>
+          <div class="pd-links" id="pd-links"></div>
+        </div>
+      </div>
+
+    </div>
+    <div class="win-statusbar">
+      <div class="status-section" id="proj-status">5 project(s)</div>
+      <div class="status-section" style="max-width:180px;">Double-click to view details</div>
+    </div>
+  </div>
+
+  <!-- ══ ACHIEVEMENTS WINDOW ══ -->
+  <div class="win" id="win-achievements">
+    <div class="win-titlebar" id="tb-achievements">
+      <span class="wt-icon">🏆</span><span class="wt-title">Achievements &amp; Awards</span>
+      <div class="win-btn" onclick="closeWin('achievements')">✕</div>
+    </div>
+    <div class="win-menubar"><span class="menu-item">File</span><span class="menu-item">View</span></div>
+    <div class="win-content">
+      <div class="ach-list">
+        <div class="ach-item"><div class="ach-icon">🏆</div><div>
+          <div class="ach-title">Cognizant Technoverse Hackathon 2026 — Shortlisted Round 2</div>
+          <div class="ach-sub">AI / Agents Track · Presented MANTIS-OS: AI-Powered Multi-Agent B2B Settlement Engine.</div>
+        </div></div>
+        <div class="ach-item"><div class="ach-icon">🥇</div><div>
+          <div class="ach-title">1st Place — WAVE 3.0 National 24-Hour Hackathon</div>
+          <div class="ach-sub">Built BEC Vortex: Unified Academic &amp; Fee Management Platform.</div>
+        </div></div>
+        <div class="ach-item"><div class="ach-icon">🥇</div><div>
+          <div class="ach-title">Winner — Innovatex, Presidency University</div>
+          <div class="ach-sub">Built Finova: Full-Stack Personal Finance Management Platform with real-time analytics.</div>
+        </div></div>
+        <div class="ach-item"><div class="ach-icon">🥇</div><div>
+          <div class="ach-title">1st Prize — Project Contest, Basaveshwar Engineering College</div>
+          <div class="ach-sub">BEC BillDesk: Digital Fee Management System eliminating manual reconciliation.</div>
+        </div></div>
+        <div class="ach-item"><div class="ach-icon">🌱</div><div>
+          <div class="ach-title">GirlScript Summer of Code 2026 (GSSoC) — Selected Contributor</div>
+          <div class="ach-sub">Open Source Program 2026.</div>
+        </div></div>
+        <div class="ach-item"><div class="ach-icon">🌱</div><div>
+          <div class="ach-title">Social Summer of Code (SSoC) — Selected Contributor</div>
+          <div class="ach-sub">Open Source Program.</div>
+        </div></div>
+      </div>
+    </div>
+    <div class="win-statusbar"><div class="status-section">6 achievement(s) · 3× National Winner</div></div>
+  </div>
+
+  <!-- ══ EDUCATION WINDOW ══ -->
+  <div class="win" id="win-education">
+    <div class="win-titlebar" id="tb-education">
+      <span class="wt-icon">🎓</span><span class="wt-title">Education</span>
+      <div class="win-btn" onclick="closeWin('education')">✕</div>
+    </div>
+    <div class="win-menubar"><span class="menu-item">File</span><span class="menu-item">View</span></div>
+    <div class="win-content" style="background:var(--win-bg);">
+      <div class="edu-list">
+        <div class="edu-item">
+          <div class="edu-degree">🏛️ B.E. Information Science &amp; Engineering</div>
+          <div class="edu-school">Basaveshwar Engineering College, Bagalkot</div>
+          <div class="edu-meta"><span class="edu-badge">CGPA: 8.24 / 10.0</span><span class="edu-badge">Expected: 2027</span></div>
+        </div>
+        <div class="edu-item">
+          <div class="edu-degree">📚 Pre-University (PCMB)</div>
+          <div class="edu-school">SVP Independent PU College for Science, Shahapur, Karnataka</div>
+          <div class="edu-meta"><span class="edu-badge">90%</span></div>
+        </div>
+        <div class="edu-item">
+          <div class="edu-degree">📖 10th Standard (SSLC)</div>
+          <div class="edu-school">D Devaraja Urs Memorial High School, Shahapur, Karnataka</div>
+          <div class="edu-meta"><span class="edu-badge">87.04%</span></div>
+        </div>
+      </div>
+    </div>
+    <div class="win-statusbar"><div class="status-section">3 institution(s)</div></div>
+  </div>
+
+  <!-- ══ CERTIFICATIONS WINDOW ══ -->
+  <div class="win" id="win-certs">
+    <div class="win-titlebar" id="tb-certs">
+      <span class="wt-icon">📜</span><span class="wt-title">Certifications &amp; Activities</span>
+      <div class="win-btn" onclick="closeWin('certs')">✕</div>
+    </div>
+    <div class="win-menubar"><span class="menu-item">File</span><span class="menu-item">View</span></div>
+    <div class="win-content">
+      <div class="cert-list">
+        <div class="cert-item"><span>📋</span><div><div class="cert-name">Linux Training</div><div class="cert-sub">IIT Bombay — Spoken Tutorial Program</div></div><div class="cert-date">Apr 2025</div></div>
+        <div class="cert-item"><span>📋</span><div><div class="cert-name">Joomla Training</div><div class="cert-sub">IIT Bombay — Spoken Tutorial Program</div></div><div class="cert-date">Oct 2025</div></div>
+        <div class="cert-item"><span>📋</span><div><div class="cert-name">Privacy &amp; Security in Online Social Media</div><div class="cert-sub">NPTEL</div></div><div class="cert-date">Jul–Oct 2025</div></div>
+        <div class="cert-item"><span>📋</span><div><div class="cert-name">Smart Cities</div><div class="cert-sub">NPTEL</div></div><div class="cert-date">Jan–Apr 2026</div></div>
+        <div style="background:var(--win-bg);padding:4px 5px 1px;font-weight:bold;font-size:9px;color:var(--win-blue);border-top:1px solid #ccc;margin-top:3px;">⚡ Extra Activities</div>
+        <div class="cert-item"><span>🎯</span><div><div class="cert-name">Student Coordinator — Technophilia 3.0</div><div class="cert-sub">RISE Association, BEC · Technical Competition</div></div><div class="cert-date">2025–26</div></div>
+      </div>
+    </div>
+    <div class="win-statusbar"><div class="status-section">4 certification(s) · 1 activity</div></div>
+  </div>
+
+  <!-- ══ CONTACT WINDOW ══ -->
+  <div class="win" id="win-contact">
+    <div class="win-titlebar" id="tb-contact">
+      <span class="wt-icon">📧</span><span class="wt-title">Contact — Samarth Sugandhi</span>
+      <div class="win-btn" onclick="closeWin('contact')">✕</div>
+    </div>
+    <div class="win-menubar"><span class="menu-item">File</span><span class="menu-item">View</span></div>
+    <div class="win-content" style="background:var(--win-bg); display: flex;">
+      <div style="flex: 1; padding: 20px; border-right: 2px solid var(--win-darker); display: flex; flex-direction: column;">
+        <h3 style="margin-bottom: 16px; color: var(--win-blue);">Send a Direct Message</h3>
+        <input type="text" id="contact-name" placeholder="Your Name" style="width: 100%; margin-bottom: 12px; padding: 10px; border: 2px solid var(--win-darker); font-size: 14px;" />
+        <textarea id="contact-msg" placeholder="Your Message..." style="width: 100%; height: 120px; margin-bottom: 12px; padding: 10px; border: 2px solid var(--win-darker); font-size: 14px; resize: none;"></textarea>
+        <button onclick="sendMessage()" style="padding: 10px 16px; font-weight: bold; background: var(--win-blue); color: #fff; border: 2px solid var(--win-darker); cursor: pointer;">Send to Inbox</button>
+        <div id="contact-status" style="margin-top: 10px; font-weight: bold; color: green; font-size: 14px; height: 20px;"></div>
+      </div>
+      <div class="contact-body" style="flex: 1; grid-template-columns: 1fr;">
+        <div class="contact-card" onclick="window.open('mailto:samarthsugandhi04@gmail.com')"><div class="cc-icon">📧</div><div><div class="cc-label">EMAIL</div><div class="cc-val">samarthsugandhi04@gmail.com</div></div></div>
+        <div class="contact-card"><div class="cc-icon">📞</div><div><div class="cc-label">PHONE</div><div class="cc-val">+91 73536 82322</div></div></div>
+        <div class="contact-card" onclick="window.open('https://github.com/samarthsugandhi','_blank')"><div class="cc-icon">💻</div><div><div class="cc-label">GITHUB</div><div class="cc-val">github.com/samarthsugandhi</div></div></div>
+        <div class="contact-card" onclick="window.open('https://linkedin.com/in/samarth-sugandhi-0082a32bb','_blank')"><div class="cc-icon">🔗</div><div><div class="cc-label">LINKEDIN</div><div class="cc-val">samarth-sugandhi-0082a32bb</div></div></div>
+        <div class="contact-card" onclick="window.open('https://samarth-sugandhi-portfolio.vercel.app','_blank')"><div class="cc-icon">🌐</div><div><div class="cc-label">PORTFOLIO</div><div class="cc-val">samarth-sugandhi-portfolio.vercel.app</div></div></div>
+      </div>
+    </div>
+    <div class="win-statusbar"><div class="status-section">Contact Information & Messaging</div></div>
+  </div>
+
+  <!-- INBOX WINDOW -->
+  <div class="win" id="win-inbox" style="width: 450px; height: 350px; left: 100px; top: 80px;">
+    <div class="win-titlebar" id="tb-inbox">
+      <span class="wt-icon">📥</span><span class="wt-title">Inbox — Secure Access</span>
+      <div class="win-btn" onclick="closeWin('inbox')">✕</div>
+    </div>
+    <div class="win-menubar"><span class="menu-item">File</span><span class="menu-item">Edit</span></div>
+    <div class="win-content" style="background:var(--win-bg); display: flex; flex-direction: column;">
+      <div id="inbox-lock" style="padding: 20px; text-align: center; flex: 1; display: flex; flex-direction: column; justify-content: center; align-items: center; background: linear-gradient(to bottom, #fff, var(--win-bg));">
+        <div style="font-size: 64px; margin-bottom: 16px;">🔒</div>
+        <h2 style="margin-bottom: 16px; color: var(--win-blue);">Encrypted Inbox</h2>
+        <input type="password" id="inbox-pwd" placeholder="Enter Password" style="padding: 8px 12px; margin-bottom: 16px; width: 200px; border: 2px solid var(--win-darker);" />
+        <button onclick="unlockInbox()" style="padding: 8px 24px; font-weight: bold; background: var(--win-blue); color: #fff; border: 2px solid var(--win-darker); cursor: pointer;">Unlock</button>
+        <div id="inbox-err" style="color: red; margin-top: 16px; font-size: 14px; font-weight: bold; height: 20px;"></div>
+      </div>
+      <div id="inbox-content" style="display: none; padding: 20px; flex: 1; overflow-y: auto; background: #fff;">
+        <!-- Messages will be injected here -->
+      </div>
+    </div>
+    <div class="win-statusbar"><div class="status-section" id="inbox-status-bar">Locked</div></div>
+  </div>
+
+</div><!-- /desktop -->
+
+<!-- START MENU -->
+<div id="start-menu">
+  <div class="start-sidebar">SamarthOS</div>
+  <div class="start-items">
+    <div class="start-item" onclick="openWin('showcase');toggleStart()"><span class="si-icon">🖥️</span> Portfolio</div>
+    <div class="start-item" onclick="openWin('about');toggleStart()"><span class="si-icon">👤</span> About</div>
+    <div class="start-item" onclick="openWin('skills');toggleStart()"><span class="si-icon">⚙️</span> Skills</div>
+    <div class="start-item" onclick="openWin('projects');toggleStart()"><span class="si-icon">💾</span> Projects</div>
+    <div class="start-item" onclick="openWin('achievements');toggleStart()"><span class="si-icon">🏆</span> Achievements</div>
+    <div class="start-item" onclick="openWin('education');toggleStart()"><span class="si-icon">🎓</span> Education</div>
+    <div class="start-item" onclick="openWin('certs');toggleStart()"><span class="si-icon">📜</span> Certificates</div>
+    <div class="start-item" onclick="openWin('contact');toggleStart()"><span class="si-icon">📧</span> Contact</div>
+    <div class="start-item" onclick="openWin('inbox');toggleStart()"><span class="si-icon">📥</span> Inbox</div>
+    <div class="start-sep"></div>
+    <div class="start-item" onclick="toggleStart()"><span class="si-icon">❌</span> Close Menu</div>
+  </div>
+</div>
+
+<!-- TASKBAR -->
+<div id="taskbar">
+  <div id="start-btn" onclick="toggleStart()">
+    <span>🪟</span> <strong>Start</strong>
+  </div>
+  <div class="tb-sep"></div>
+  <div id="tb-windows"></div>
+  <div class="tb-clock-area">
+    🔊 <span id="clock">--:--</span>
+  </div>
+</div>
+
+<script>
+// ── Project data ──
+const projects = {
+  vortex: {
+    title: 'BEC Vortex — Unified Academic & Fee Management Platform',
+    tech: ['Next.js','TypeScript','Node.js','MongoDB','Socket.IO'],
+    badge: '🥇 1st Place · WAVE 3.0 National Hackathon',
+    cat: 'Team Project',
+    image: '/images/becvortex.png',
+    points: [
+      'Browser-based campus operating system — a full Next.js application that emulates a macOS-style desktop environment.',
+      'Accessible windowed applications for every administrative workflow: student admissions, fee payments, and AI-assisted marks entry.',
+      'Role-based desktop ensuring each user sees only their permitted applications with a fully draggable, resizable window system.',
+      'Live clock, dock for quick app launching, and fully responsive dark-themed, glassmorphic UI.',
+      'Real-time AI assistant (VORA) and live voice agent (ARIA) integrated directly into the workflow.',
+      'Real-time college-wide chat leveraging Socket.IO.'
+    ],
+    links: [
+      { label: '🔗 Live Demo', url: 'https://becvortex.onrender.com/' },
+      { label: '💻 Source Code', url: 'https://github.com/sangam-gaddi/BecVortex.git' }
+    ]
+  },
+  mantis: {
+    title: 'MANTIS-OS — AI-Powered Multi-Agent Settlement Engine',
+    tech: ['Next.js','MongoDB','PostgreSQL','System Design'],
+    badge: '🏆 Shortlisted · Cognizant Technoverse 2026',
+    cat: 'Team Project',
+    image: '/images/mantis-os.png',
+    points: [
+      'Multi-agent B2B settlement platform designed to address the SME payment delay crisis by optimizing cash flows.',
+      'Robust four-module architecture: Settlement Engine, Decentralized Exchange (DEX), Syndicate Lending, and Privacy preserving layers.',
+      'Comprehensive system design encompassing real-time event-driven microservices.',
+      'Presented detailed data-flow diagrams and technical documentation to Cognizant evaluators during the hackathon.'
+    ],
+    links: [
+      { label: '💻 Source Code', url: 'https://github.com/sangam-gaddi/MANTIS-OS.git' }
+    ]
+  },
+  finova: {
+    title: 'Finova — Personal Finance Management Platform',
+    tech: ['Next.js','React.js','Node.js','MongoDB'],
+    badge: '🥇 Winner · Innovatex, Presidency University',
+    cat: 'Team Project',
+    image: '/images/finnova.png',
+    points: [
+      'Full-stack finance tracker enabling users to automatically categorize and manage their daily transactions.',
+      'Interactive, real-time analytics dashboards providing deep insights into income vs. expenditure.',
+      'Sleek, mobile-responsive UI designed to make tracking spending patterns seamless across all devices.',
+      'Secure user authentication and data privacy mechanisms for sensitive financial data.'
+    ],
+    links: [
+      { label: '💻 Source Code', url: 'https://github.com/sangam-gaddi/finova.git' }
+    ]
+  },
+  billdesk: {
+    title: 'BEC BillDesk — AI-Powered College Fee Payment Portal',
+    tech: ['Next.js','TypeScript','MongoDB', 'LiveKit'],
+    badge: '🥇 1st Prize · Project Contest, BEC',
+    cat: 'Team Project',
+    image: '/images/becbilldesk.png',
+    points: [
+      'Modern, macOS-inspired college fee payment portal with a dock, windows, launchpad, and control center.',
+      'Friendly AI Voice Assistant (ARIA) powered by Cerebras AI to guide students through the payment process.',
+      'Multiple Payment Methods integrated including Crypto (Sepolia ETH), UPI, Net Banking, and Cash.',
+      'Secure student login using JWT Authentication and automated Bank of Baroda style PDF receipt generation.',
+      'Real-time Chat powered by Socket.IO and Dynamic Dark/Light Mode theming.'
+    ],
+    links: [
+      { label: '🔗 Live Demo', url: 'https://becbilldesk.onrender.com/' },
+      { label: '💻 Source Code', url: 'https://github.com/sangam-gaddi/BECBILLDESK-voice-agent-includes-.git' }
+    ]
+  },
+  technophilia: {
+    title: 'Technophilia 3.0 — Official Tech Fest Website',
+    tech: ['Next.js','Tailwind CSS'],
+    badge: '🌐 ISE Dept. BEC · 500+ Visitors',
+    cat: 'Solo Project',
+    image: '/images/technophilia.png',
+    points: [
+      'Designed and deployed the official technical festival website for the ISE Department at Basaveshwar Engineering College.',
+      'Engineered to handle high traffic, successfully serving over 500+ unique visitors during the event days.',
+      'Featured dynamic event schedules, automated ticketing, and an interactive registration functionality.',
+      'Built with Next.js and Tailwind CSS to ensure a lightning-fast, fully responsive user experience.'
+    ],
+    links: [
+      { label: '🔗 Live Demo', url: 'https://technophilia-3.vercel.app/' }
+    ]
+  }
+};
+
+// ── Window management ──
+let zTop = 20;
+const openWindows = {};
+
+function openWin(name) {
+  const win = document.getElementById('win-' + name);
+  if (!win) return;
+  win.classList.add('visible');
+  focusWin(name);
+  openWindows[name] = true;
+  renderTaskbar();
+  
+  if(name === 'credits') {
+    const audio = document.getElementById('credits-audio');
+    if(audio) audio.play();
+  }
+}
+function closeWin(name) {
+  const win = document.getElementById('win-' + name);
+  if (!win) return;
+  win.classList.remove('visible','focused');
+  delete openWindows[name];
+  renderTaskbar();
+  
+  if(name === 'credits') {
+    const audio = document.getElementById('credits-audio');
+    if(audio) audio.pause();
+  }
+}
+function focusWin(name) {
+  document.querySelectorAll('.win').forEach(w => w.classList.remove('focused'));
+  const win = document.getElementById('win-' + name);
+  if (win) { win.classList.add('focused'); win.style.zIndex = ++zTop; }
+  renderTaskbar();
+}
+
+// ── Drag ──
+const winNames = ['showcase','about','skills','projects','achievements','education','certs','contact','inbox','doom','credits'];
+winNames.forEach(name => {
+  const tb  = document.getElementById('tb-' + name);
+  const win = document.getElementById('win-' + name);
+  if (!tb || !win) return;
+  let dragging = false, ox = 0, oy = 0;
+  tb.addEventListener('mousedown', e => {
+    if (e.target.classList.contains('win-btn') || e.target.tagName === 'A') return;
+    dragging = true;
+    ox = e.clientX - win.offsetLeft;
+    oy = e.clientY - win.offsetTop;
+    focusWin(name);
+    e.preventDefault();
+  });
+  document.addEventListener('mousemove', e => {
+    if (!dragging) return;
+    win.style.left = (e.clientX - ox) + 'px';
+    win.style.top  = (e.clientY - oy) + 'px';
+  });
+  document.addEventListener('mouseup', () => { dragging = false; });
+  win.addEventListener('mousedown', () => focusWin(name));
+});
+
+// ── Taskbar ──
+const winMeta = {
+  showcase: { icon:'🖥️', label:'Portfolio' },
+  about:    { icon:'👤', label:'About' },
+  skills:   { icon:'⚙️', label:'Skills' },
+  projects: { icon:'💾', label:'Projects' },
+  achievements:{ icon:'🏆', label:'Awards' },
+  education:{ icon:'🎓', label:'Education' },
+  certs:    { icon:'📜', label:'Certs' },
+  contact:  { icon:'📧', label:'Contact' },
+  inbox:    { icon:'📥', label:'Inbox' },
+  doom:     { icon:'👾', label:'DOOM' },
+  credits:  { icon:'🎬', label:'Credits' }
+};
+function renderTaskbar() {
+  const tbWins = document.getElementById('tb-windows');
+  tbWins.innerHTML = '';
+  const focused = document.querySelector('.win.focused');
+  Object.keys(openWindows).forEach(name => {
+    const m = winMeta[name];
+    const btn = document.createElement('div');
+    btn.className = 'tb-window-btn' + (focused && focused.id === 'win-' + name ? ' active' : '');
+    btn.innerHTML = m.icon + ' ' + m.label;
+    btn.onclick = () => focusWin(name);
+    tbWins.appendChild(btn);
+  });
+}
+
+// ── Start ──
+function toggleStart() {
+  document.getElementById('start-menu').classList.toggle('visible');
+}
+document.addEventListener('click', e => {
+  const sm = document.getElementById('start-menu');
+  const sb = document.getElementById('start-btn');
+  if (!sm.contains(e.target) && !sb.contains(e.target)) sm.classList.remove('visible');
+});
+
+// ── Clock ──
+function updateClock() {
+  document.getElementById('clock').textContent =
+    new Date().toLocaleTimeString([], { hour:'2-digit', minute:'2-digit' });
+}
+setInterval(updateClock, 1000); updateClock();
+
+// ── Inbox & Contact Messaging Logic ──
+function sendMessage() {
+  const name = document.getElementById('contact-name').value.trim();
+  const msg = document.getElementById('contact-msg').value.trim();
+  if(!name || !msg) {
+    document.getElementById('contact-status').style.color = 'red';
+    document.getElementById('contact-status').textContent = 'Please fill out all fields!';
+    setTimeout(() => document.getElementById('contact-status').textContent = '', 3000);
+    return;
+  }
+  const messages = JSON.parse(localStorage.getItem('portfolio_msgs') || '[]');
+  messages.push({ name, msg, time: new Date().toLocaleString() });
+  localStorage.setItem('portfolio_msgs', JSON.stringify(messages));
+  
+  document.getElementById('contact-name').value = '';
+  document.getElementById('contact-msg').value = '';
+  document.getElementById('contact-status').style.color = 'green';
+  document.getElementById('contact-status').textContent = 'Message sent to Inbox!';
+  setTimeout(() => document.getElementById('contact-status').textContent = '', 3000);
+  
+  if (document.getElementById('inbox-content').style.display === 'block') {
+    renderInbox();
+  }
+}
+
+function unlockInbox() {
+  const pwd = document.getElementById('inbox-pwd').value;
+  if(pwd === 'samarth2026') {
+    document.getElementById('inbox-lock').style.display = 'none';
+    document.getElementById('inbox-content').style.display = 'block';
+    document.getElementById('inbox-status-bar').textContent = 'Unlocked - Secure Connection';
+    renderInbox();
+  } else {
+    document.getElementById('inbox-err').textContent = 'Incorrect password.';
+  }
+}
+
+function renderInbox() {
+  const content = document.getElementById('inbox-content');
+  const messages = JSON.parse(localStorage.getItem('portfolio_msgs') || '[]');
+  if(messages.length === 0) {
+    content.innerHTML = '<div style="color: #666; font-style: italic; text-align: center; margin-top: 40px;">No messages in inbox.</div>';
+    return;
+  }
+  content.innerHTML = messages.slice().reverse().map(m => `
+    <div style="border: 1px solid var(--win-dark); background: #f9f9f9; padding: 12px; margin-bottom: 12px; border-left: 4px solid var(--win-blue);">
+      <div style="display: flex; justify-content: space-between; margin-bottom: 6px;">
+        <strong style="color: var(--win-blue); font-size: 15px;">From: ${m.name}</strong>
+        <span style="font-size: 12px; color: #666;">${m.time}</span>
+      </div>
+      <div style="font-size: 14px; color: #111; line-height: 1.5; white-space: pre-wrap;">${m.msg}</div>
+    </div>
+  `).join('');
+}
+
+// Ensure pwd enter key works
+document.getElementById('inbox-pwd').addEventListener('keypress', function(e) {
+    if (e.key === 'Enter') unlockInbox();
+});
+
+// ── Project detail ──
+const piMap = { vortex:'pi-vortex', mantis:'pi-mantis', finova:'pi-finova', billdesk:'pi-billdesk', technophilia:'pi-techno' };
+
+function showProjDetail(key) {
+  const p = projects[key];
+  if (!p) return;
+  document.getElementById('pd-title').textContent = p.title;
+  document.getElementById('pd-meta').innerHTML =
+    p.tech.map(t => `<span class="pd-badge">${t}</span>`).join('') +
+    `<span class="pd-badge" style="background:#555">${p.cat}</span>` +
+    `<span class="pd-badge" style="background:#996600">${p.badge}</span>`;
+  document.getElementById('pd-desc').innerHTML =
+    '<ul>' + p.points.map(pt => `<li>${pt}</li>`).join('') + '</ul>';
+    
+  const imgEl = document.getElementById('pd-image');
+  if (p.image) {
+      imgEl.src = p.image;
+      imgEl.style.display = 'inline-block';
+  } else {
+      imgEl.style.display = 'none';
+  }
+
+  const linksHtml = p.links ? p.links.map(l => `<a href="${l.url}" target="_blank" onclick="window.open('${l.url}','_blank')">${l.label}</a>`).join('') : '';
+  document.getElementById('pd-links').innerHTML = linksHtml;
+
+  document.getElementById('proj-detail').classList.add('visible');
+}
+
+function hideProjDetail() {
+  document.getElementById('proj-detail').classList.remove('visible');
+}
+
+function selectProj(el) {
+  document.querySelectorAll('.proj-icon').forEach(p => p.classList.remove('selected'));
+  el.classList.add('selected');
+}
+
+// ── Project filter ──
+function filterProj(cat, el) {
+  document.querySelectorAll('.tree-item').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+  document.querySelectorAll('.proj-icon').forEach(pi => {
+    pi.style.display = (cat === 'all' || pi.dataset.cat === cat) ? 'flex' : 'none';
+  });
+  const vis = [...document.querySelectorAll('.proj-icon')].filter(p => p.style.display !== 'none').length;
+  document.getElementById('proj-status').textContent = vis + ' project(s)';
+  hideProjDetail();
+}
+
+// ── Init: showcase opens first, add to taskbar ──
+window.onload = () => {
+  openWindows['showcase'] = true;
+  renderTaskbar();
+};
+
+// ── Mouse passthrough to parent 3D scene ──
+document.addEventListener('mousemove', e => window.parent.postMessage({ type:'mousemove', clientX:e.clientX, clientY:e.clientY }, '*'));
+document.addEventListener('mousedown', () => window.parent.postMessage({ type:'mousedown' }, '*'));
+document.addEventListener('mouseup',   () => window.parent.postMessage({ type:'mouseup' }, '*'));
+document.addEventListener('keydown', e => window.parent.postMessage({ type:'keydown', key:e.key }, '*'));
+</script>
+</body>
+</html>
