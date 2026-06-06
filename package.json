@@ -4,7 +4,8 @@
     "scripts": {
         "start": "node server/index.ts",
         "build": "webpack --config ./bundler/webpack.prod.js",
-        "dev": "webpack serve --config ./bundler/webpack.dev.js"
+        "dev": "webpack serve --config ./bundler/webpack.dev.js",
+        "vercel-build": "webpack --config ./bundler/webpack.prod.js"
     },
     "dependencies": {
         "@babel/core": "^7.16.12",
